@@ -228,6 +228,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ActivityIndicator } from 'react-native';
 
+
 export default function ProfileScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -324,6 +325,7 @@ export default function ProfileScreen() {
     'Community Hero': '🏆',
   };
 
+  console.log(profile)
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
       
@@ -382,7 +384,7 @@ export default function ProfileScreen() {
           textAlign: 'center',
           marginBottom: 24,
         }}>
-          BLK 329, TOA{'\n'}PAYOH
+          {profile.town}
         </Text>
 
         {/* Green Score Label */}
@@ -404,7 +406,7 @@ export default function ProfileScreen() {
           textAlign: 'center',
           marginBottom: 24,
         }}>
-          {profile.green_score || 843}
+          {profile.green_score}
         </Text>
 
         {/* Badges Section */}

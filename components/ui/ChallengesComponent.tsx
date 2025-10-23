@@ -179,7 +179,7 @@ export default function ChallengesComponent() {
         }}
       >
         <Pressable
-          onPress={() => router.push("/")}
+          onPress={() => router.push("/menu")}
           style={{
             backgroundColor: "#FFA726",
             borderRadius: 6,

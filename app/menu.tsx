@@ -67,7 +67,7 @@ import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import { Image, ImageBackground, type ImageStyle, View, StyleSheet, Dimensions } from 'react-native';
 
-import MenuComponent from '@/components/ui/MenuComponent';
+import HomeScreenComponent from '@/components/ui/HomeScreenComponent';
 
 const LOGO = {
   light: require('@/assets/images/react-native-reusables-light.png'),
@@ -98,7 +98,7 @@ export default function Screen() {
         imageStyle={styles.image}
       >
         <View style={styles.container}>
-          <MenuComponent/>
+          <HomeScreenComponent/>
         </View>
       </ImageBackground>
     </>
