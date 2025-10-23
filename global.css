@@ -55,4 +55,24 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  body {
+    font-family: 'PressStart2P', monospace;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    letter-spacing: 0.5px;
+  }
+
+
+  button {
+    border: 3px solid #c35c00;
+    background-color: #ffa726;
+    color: #3b0a00;
+    font-family: 'PressStart2P', monospace;
+    text-transform: uppercase;
+  }
+}
+
+html, body, * {
+  font-family: 'PressStart2P', monospace !important;
 }
