@@ -33,7 +33,7 @@ export default function MapScreen(){
         options={SCREEN_OPTIONS
         }
       />
-      <Text>Place map here thanks :)</Text>
+      <MapComponent />
     </View>
     )
 }
