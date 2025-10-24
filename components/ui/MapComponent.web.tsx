@@ -3,19 +3,57 @@ import { View, StyleSheet, Dimensions, Modal, Pressable, Platform } from 'react-
 import { Text } from '@/components/ui/text';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+
 import { useRouter } from 'expo-router';
 
+import { supabase } from '../../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
-// test
+// Base towns array - this will be fetched from database
 const towns = [
   { id: 'amk', name: 'Ang Mo Kio', latitude: 1.3691, longitude: 103.8490, electricity: 1200, water: 3400, green_score: 72 },
   { id: 'bishan', name: 'Bishan', latitude: 1.3500, longitude: 103.8520, electricity: 950, water: 2800, green_score: 68 },
   { id: 'bukit_timah', name: 'Bukit Timah', latitude: 1.3431, longitude: 103.7766, electricity: 800, water: 2300, green_score: 80 },
   { id: 'orchard', name: 'Orchard', latitude: 1.3039, longitude: 103.8328, electricity: 2000, water: 4500, green_score: 60 },
   { id: 'woodlands', name: 'Woodlands', latitude: 1.4376, longitude: 103.7863, electricity: 1100, water: 3000, green_score: 70 },
-  { id: 'jurong', name: 'Jurong', latitude: 1.3326, longitude: 103.7423, electricity: 1300, water: 3600, green_score: 65 },
+  { id: 'jurong_east', name: 'Jurong East', latitude: 1.3326, longitude: 103.7423, electricity: 1300, water: 3600, green_score: 65 },
+  { id: 'bukit_merah', name: 'Bukit Merah', latitude: 1.2810, longitude: 103.8250, electricity: 1500, water: 3800, green_score: 58 },
+  { id: 'downtown_core', name: 'Downtown Core', latitude: 1.2800, longitude: 103.8500, electricity: 2500, water: 5000, green_score: 55 },
+  { id: 'geylang', name: 'Geylang', latitude: 1.3180, longitude: 103.8820, electricity: 1400, water: 3700, green_score: 62 },
+  { id: 'kallang', name: 'Kallang', latitude: 1.3050, longitude: 103.8650, electricity: 1200, water: 3200, green_score: 68 },
+  { id: 'marine_parade', name: 'Marine Parade', latitude: 1.3020, longitude: 103.9050, electricity: 1100, water: 2900, green_score: 75 },
+  { id: 'newton', name: 'Newton', latitude: 1.3120, longitude: 103.8400, electricity: 1800, water: 4200, green_score: 63 },
+  { id: 'novena', name: 'Novena', latitude: 1.3220, longitude: 103.8450, electricity: 1600, water: 3900, green_score: 66 },
+  { id: 'outram', name: 'Outram', latitude: 1.2820, longitude: 103.8400, electricity: 1700, water: 4100, green_score: 61 },
+  { id: 'queenstown', name: 'Queenstown', latitude: 1.2950, longitude: 103.8000, electricity: 1300, water: 3500, green_score: 69 },
+  { id: 'river_valley', name: 'River Valley', latitude: 1.2950, longitude: 103.8350, electricity: 1900, water: 4400, green_score: 59 },
+  { id: 'rochor', name: 'Rochor', latitude: 1.3050, longitude: 103.8550, electricity: 1600, water: 3800, green_score: 64 },
+  { id: 'singapore_river', name: 'Singapore River', latitude: 1.2880, longitude: 103.8450, electricity: 2100, water: 4700, green_score: 57 },
+  { id: 'southern_islands', name: 'Southern Islands', latitude: 1.2550, longitude: 103.8250, electricity: 500, water: 1500, green_score: 85 },
+  { id: 'tanglin', name: 'Tanglin', latitude: 1.3080, longitude: 103.8200, electricity: 1700, water: 4000, green_score: 67 },
+  { id: 'toa_payoh', name: 'Toa Payoh', latitude: 1.3380, longitude: 103.8500, electricity: 1250, water: 3300, green_score: 71 },
+  { id: 'bedok', name: 'Bedok', latitude: 1.3230, longitude: 103.9300, electricity: 1400, water: 3600, green_score: 70 },
+  { id: 'changi', name: 'Changi', latitude: 1.3570, longitude: 103.9800, electricity: 900, water: 2500, green_score: 78 },
+  { id: 'pasir_ris', name: 'Pasir Ris', latitude: 1.3730, longitude: 103.9500, electricity: 1100, water: 3100, green_score: 73 },
+  { id: 'paya_lebar', name: 'Paya Lebar', latitude: 1.3550, longitude: 103.8850, electricity: 1300, water: 3400, green_score: 69 },
+  { id: 'tampines', name: 'Tampines', latitude: 1.3520, longitude: 103.9300, electricity: 1450, water: 3700, green_score: 72 },
+  { id: 'hougang', name: 'Hougang', latitude: 1.3720, longitude: 103.8800, electricity: 1350, water: 3500, green_score: 70 },
+  { id: 'punggol', name: 'Punggol', latitude: 1.4050, longitude: 103.9100, electricity: 1200, water: 3200, green_score: 74 },
+  { id: 'seletar', name: 'Seletar', latitude: 1.4130, longitude: 103.8700, electricity: 800, water: 2200, green_score: 79 },
+  { id: 'sengkang', name: 'Sengkang', latitude: 1.3920, longitude: 103.8900, electricity: 1250, water: 3300, green_score: 73 },
+  { id: 'serangoon', name: 'Serangoon', latitude: 1.3550, longitude: 103.8700, electricity: 1300, water: 3400, green_score: 71 },
+  { id: 'mandai', name: 'Mandai', latitude: 1.4150, longitude: 103.7750, electricity: 700, water: 2000, green_score: 82 },
+  { id: 'sembawang', name: 'Sembawang', latitude: 1.4450, longitude: 103.8250, electricity: 950, water: 2700, green_score: 76 },
+  { id: 'sungei_kadut', name: 'Sungei Kadut', latitude: 1.4250, longitude: 103.7550, electricity: 600, water: 1800, green_score: 81 },
+  { id: 'yishun', name: 'Yishun', latitude: 1.4300, longitude: 103.8350, electricity: 1150, water: 3100, green_score: 72 },
+  { id: 'bukit_batok', name: 'Bukit Batok', latitude: 1.3630, longitude: 103.7550, electricity: 1100, water: 3000, green_score: 74 },
+  { id: 'bukit_panjang', name: 'Bukit Panjang', latitude: 1.3850, longitude: 103.7750, electricity: 1050, water: 2900, green_score: 75 },
+  { id: 'choa_chu_kang', name: 'Choa Chu Kang', latitude: 1.3850, longitude: 103.7450, electricity: 1200, water: 3200, green_score: 73 },
+  { id: 'clementi', name: 'Clementi', latitude: 1.3150, longitude: 103.7650, electricity: 1350, water: 3500, green_score: 70 },
+  { id: 'jurong_west', name: 'Jurong West', latitude: 1.3450, longitude: 103.7050, electricity: 1400, water: 3700, green_score: 66 },
+  { id: 'pioneer', name: 'Pioneer', latitude: 1.3250, longitude: 103.6900, electricity: 950, water: 2600, green_score: 77 },
+  { id: 'tengah', name: 'Tengah', latitude: 1.3600, longitude: 103.7300, electricity: 850, water: 2400, green_score: 80 },
 ];
 
 let MapContainer: any, TileLayer: any, LeafletPolygon: any, Popup: any;
@@ -30,240 +68,127 @@ if (isBrowser && Platform.OS === 'web') {
 }
 
 export default function MapComponent() {
-
   const router = useRouter();
   const [selected, setSelected] = useState<typeof towns[0] | null>(null);
   const [showWebMap, setShowWebMap] = useState(false);
+  const [townData, setTownData] = useState<typeof towns>([]);
 
-  const [mapComponents, setMapComponents] = useState<{
-    MapView: any;
-    Marker: any;
-    Polygon: any;
-  } | null>(null);
+
+  async function fetchTown() {
+    try {
+      const { data, error } = await supabase
+        .from('scoreboard')
+        .select('*')
+        .limit(100);
+
+      if (error) {
+        console.error('Fetch error:', error);
+        return;
+      }
+
+      const filtered_data = data.filter(item => { return (item != null)  } )
+
+
+      setTownData(filtered_data);
+    } catch (error) {
+      console.error('Error fetching scoreboard:', error);
+    } finally {
+    }
+  }
 
   useEffect(() => {
+
+    fetchTown();
     if (isBrowser && Platform.OS === 'web') {
       setShowWebMap(true);
     }
+    
+
+
+    // In your actual implementation, you would fetch from database here
+    // For now, we'll use the static towns array
   }, []);
 
-  // mobile app
-  // 
-  /*
-  if (!showWebMap) {
-   useEffect(() => {
-        const loadNativeMap = async () => {
-          const { default: MapView, Marker, Polygon } = await import('react-native-maps');
-          setNativeMap({ MapView, Marker, Polygon });
-        };
-        //loadNativeMap();
+  // Function to generate polygon coordinates relative to town center
+  const generateTownPolygons = (townsData: typeof towns) => {
+    const polygons: Record<string, [number, number][]> = {};
+    
+    townsData.forEach(town => {
+      // Define polygon size (in degrees)
+      const latOffset = 0.008; // ~0.9km
+      const lngOffset = 0.010; // ~1.1km
+      
+      // Generate a diamond-shaped polygon around the town center
+      polygons[town.id] = [
+        [town.latitude + latOffset, town.longitude], // Top
+        [town.latitude, town.longitude + lngOffset], // Right
+        [town.latitude - latOffset, town.longitude], // Bottom
+        [town.latitude, town.longitude - lngOffset], // Left
+      ];
+    });
+    
+    return polygons;
+  };
 
-    // test polygon (can use qgis or labelling tools to get actual boundaries)
-    const townPolygons: Record<typeof towns[number]['id'], { latitude: number; longitude: number }[]> = {
-      amk: [
-        { latitude: 1.370, longitude: 103.845 },
-        { latitude: 1.372, longitude: 103.850 },
-        { latitude: 1.368, longitude: 103.853 },
-        { latitude: 1.366, longitude: 103.848 },
-      ],
-      bishan: [
-        { latitude: 1.352, longitude: 103.850 },
-        { latitude: 1.354, longitude: 103.854 },
-        { latitude: 1.350, longitude: 103.856 },
-        { latitude: 1.348, longitude: 103.852 },
-      ],
-      bukit_timah: [
-        { latitude: 1.344, longitude: 103.774 },
-        { latitude: 1.346, longitude: 103.778 },
-        { latitude: 1.342, longitude: 103.780 },
-        { latitude: 1.340, longitude: 103.776 },
-      ],
-      orchard: [
-        { latitude: 1.305, longitude: 103.830 },
-        { latitude: 1.307, longitude: 103.834 },
-        { latitude: 1.303, longitude: 103.836 },
-        { latitude: 1.301, longitude: 103.832 },
-      ],
-      woodlands: [
-        { latitude: 1.438, longitude: 103.784 },
-        { latitude: 1.440, longitude: 103.788 },
-        { latitude: 1.436, longitude: 103.790 },
-        { latitude: 1.434, longitude: 103.786 },
-      ],
-      jurong: [
-        { latitude: 1.334, longitude: 103.740 },
-        { latitude: 1.336, longitude: 103.744 },
-        { latitude: 1.332, longitude: 103.746 },
-        { latitude: 1.330, longitude: 103.742 },
-      ],
+  if (showWebMap) { 
+    // Generate town polygons dynamically based on town coordinates
+    const townPolygons = generateTownPolygons(townData);
+
+    // Generate colors for all towns
+    const generateColors = () => {
+      const colors = [
+        'rgba(255, 99, 132, 0.4)',    // Red
+        'rgba(54, 162, 235, 0.4)',    // Blue
+        'rgba(255, 206, 86, 0.4)',    // Yellow
+        'rgba(75, 192, 192, 0.4)',    // Teal
+        'rgba(153, 102, 255, 0.4)',   // Purple
+        'rgba(255, 159, 64, 0.4)',    // Orange
+        'rgba(199, 199, 199, 0.4)',   // Gray
+        'rgba(83, 102, 255, 0.4)',    // Indigo
+        'rgba(40, 159, 64, 0.4)',     // Green
+        'rgba(210, 114, 225, 0.4)',   // Pink
+        'rgba(102, 159, 255, 0.4)',   // Light Blue
+        'rgba(255, 102, 159, 0.4)',   // Light Red
+        'rgba(159, 255, 102, 0.4)',   // Light Green
+        'rgba(255, 203, 102, 0.4)',   // Light Orange
+        'rgba(102, 255, 203, 0.4)',   // Mint
+        'rgba(203, 102, 255, 0.4)',   // Lavender
+        'rgba(255, 102, 203, 0.4)',   // Hot Pink
+        'rgba(102, 203, 255, 0.4)',   // Sky Blue
+        'rgba(203, 255, 102, 0.4)',   // Lime
+        'rgba(255, 153, 102, 0.4)',   // Coral
+      ];
+      
+      const polygonColors: Record<string, string> = {};
+      townData.forEach((town, index) => {
+        polygonColors[town.id] = colors[index % colors.length];
+      });
+      return polygonColors;
     };
-    const polygonColors: Record<typeof towns[number]['id'], string> = {
-      amk: 'rgba(255, 99, 132, 0.4)',
-      bishan: 'rgba(54, 162, 235, 0.4)',
-      bukit_timah: 'rgba(255, 206, 86, 0.4)',
-      orchard: 'rgba(75, 192, 192, 0.4)',
-      woodlands: 'rgba(153, 102, 255, 0.4)',
-      jurong: 'rgba(255, 159, 64, 0.4)',
-    };
-    return (
-      <View style={styles.container}>
 
+    const polygonColors = generateColors();
 
-      <Pressable
-        onPress={() => router.push('/menu')}
-        style={{
-          backgroundColor: '#FFA726',
-          borderColor: '#FF4081',
-          borderWidth: 4,
-          paddingVertical: 14,
-          paddingHorizontal: 40,
-          borderRadius: 8,
-          marginTop: 32,
-          shadowColor: '#000',
-          shadowOffset: { width: 4, height: 4 },
-          shadowOpacity: 1,
-          shadowRadius: 0,
-        }}
-      >
-        <Text style={{
-          fontFamily: 'PressStart2P',
-          fontSize: 10,
-          color: '#3B0A00',
-          textAlign: 'center',
-        }}>
-          BACK TO HOME
-        </Text>
-
-      </Pressable>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 1.3521,
-            longitude: 103.8198,
-            latitudeDelta: 0.25,
-            longitudeDelta: 0.25,
-          }}
-        >
-          {towns.map((town) => (
-            <Polygon
-              key={town.id}
-              coordinates={townPolygons[town.id]}
-              fillColor={polygonColors[town.id]}
-              strokeColor={polygonColors[town.id].replace('0.4', '1')}
-              tappable={true}
-              onPress={() => setSelected(town)}
-            />
-          ))}
-
-        </MapView>
-
-
-        <Modal
-          visible={!!selected}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setSelected(null)}
-        >
-          <View style={styles.modalBackdrop}>
-            <View style={styles.modalCardWrapper}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{selected?.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <View style={styles.row}>
-                    <Text className="text-gray-600">⚡ Electricity</Text>
-                    <Text className="font-medium">{selected?.electricity} kWh</Text>
-                  </View>
-                  <View style={styles.row}>
-                    <Text className="text-gray-600">💧 Water</Text>
-                    <Text className="font-medium">{selected?.water} L</Text>
-                  </View>
-                  <View style={styles.row}>
-                    <Text className="text-gray-600">🌱 Green Score</Text>
-                    <Text className="font-medium">{selected?.green_score} pts</Text>
-                  </View>
-                  <Pressable style={styles.closeButton} onPress={() => setSelected(null)}>
-                    <Text className="text-center">Close</Text>
-                  </Pressable>
-                </CardContent>
-              </Card>
-            </View>
-
-          </View>
-        </Modal>
-
-      </View>
-    );
-      }, []);
-  }
-*/
- if (showWebMap)  { 
-  // web app (some window error as well need exception check used chatgpt but idk how it works)
-  
-    // test polygons
-    const townPolygons: Record<typeof towns[number]['id'], [number, number][]> = {
-      amk: [
-        [1.370, 103.845],
-        [1.372, 103.850],
-        [1.368, 103.853],
-        [1.366, 103.848],
-      ],
-      bishan: [
-        [1.352, 103.850],
-        [1.354, 103.854],
-        [1.350, 103.856],
-        [1.348, 103.852],
-      ],
-      bukit_timah: [
-        [1.344, 103.774],
-        [1.346, 103.778],
-        [1.342, 103.780],
-        [1.340, 103.776],
-      ],
-      orchard: [
-        [1.305, 103.830],
-        [1.307, 103.834],
-        [1.303, 103.836],
-        [1.301, 103.832],
-      ],
-      woodlands: [
-        [1.438, 103.784],
-        [1.440, 103.788],
-        [1.436, 103.790],
-        [1.434, 103.786],
-      ],
-      jurong: [
-        [1.334, 103.740],
-        [1.336, 103.744],
-        [1.332, 103.746],
-        [1.330, 103.742],
-      ],
-    };
-    const polygonColors: Record<typeof towns[number]['id'], string> = {
-      amk: 'rgba(255, 99, 132, 0.4)',
-      bishan: 'rgba(54, 162, 235, 0.4)',
-      bukit_timah: 'rgba(255, 206, 86, 0.4)',
-      orchard: 'rgba(75, 192, 192, 0.4)',
-      woodlands: 'rgba(153, 102, 255, 0.4)',
-      jurong: 'rgba(255, 159, 64, 0.4)',
-    };
     return (
       <View style={styles.webContainer}>
         <MapContainer
           center={[1.3521, 103.8198]}
-          zoom={12}
+          zoom={11}
           style={{ height: height * 0.7, width: width * 0.9, borderRadius: 12 }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; OpenStreetMap contributors"
           />
-          {towns.map((town) => (
+          {townData.map((town) => (
             <LeafletPolygon
               key={town.id}
               positions={townPolygons[town.id]}
-              pathOptions={{ color: polygonColors[town.id], fillColor: polygonColors[town.id], fillOpacity: 0.6 }}
+              pathOptions={{ 
+                color: polygonColors[town.id], 
+                fillColor: polygonColors[town.id], 
+                fillOpacity: 0.6,
+                weight: 2
+              }}
               eventHandlers={{
                 click: () => setSelected(town),
               }}
@@ -271,7 +196,7 @@ export default function MapComponent() {
           ))}
           {selected && (
             <Popup
-              position={townPolygons[selected.id][0]}
+              position={[selected.latitude, selected.longitude]}
               eventHandlers={{ close: () => setSelected(null) }}
             >
               <div style={{ minWidth: 180 }}>
@@ -285,33 +210,32 @@ export default function MapComponent() {
           )}
         </MapContainer>
 
-      {/* Back to Home Button */}
-      <Pressable
-        onPress={() => router.push('/menu')}
-        style={{
-          backgroundColor: '#FFA726',
-          borderColor: '#FF4081',
-          borderWidth: 4,
-          paddingVertical: 14,
-          paddingHorizontal: 40,
-          borderRadius: 8,
-          marginTop: 32,
-          shadowColor: '#000',
-          shadowOffset: { width: 4, height: 4 },
-          shadowOpacity: 1,
-          shadowRadius: 0,
-        }}
-      >
-        <Text style={{
-          fontFamily: 'PressStart2P',
-          fontSize: 10,
-          color: '#3B0A00',
-          textAlign: 'center',
-        }}>
-          BACK TO HOME
-        </Text>
-
-      </Pressable>
+        {/* Back to Home Button */}
+        <Pressable
+          onPress={() => router.push('/menu')}
+          style={{
+            backgroundColor: '#FFA726',
+            borderColor: '#FF4081',
+            borderWidth: 4,
+            paddingVertical: 14,
+            paddingHorizontal: 40,
+            borderRadius: 8,
+            marginTop: 32,
+            shadowColor: '#000',
+            shadowOffset: { width: 4, height: 4 },
+            shadowOpacity: 1,
+            shadowRadius: 0,
+          }}
+        >
+          <Text style={{
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+            color: '#3B0A00',
+            textAlign: 'center',
+          }}>
+            BACK TO HOME
+          </Text>
+        </Pressable>
       </View>
     );
   }
@@ -325,7 +249,6 @@ export default function MapComponent() {
     );
   }
 
-  // Web: Use Google Maps iframe and clickable town list
   return (
     <View style={styles.webContainer}>
       <Text className="text-lg font-bold mb-4">Interactive polygons are not supported in the current web map. For full interactivity, use a library like react-google-maps/api or react-leaflet.</Text>

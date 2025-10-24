@@ -1,10 +1,16 @@
 import React from "react";
-import { View, Text, Pressable, ImageBackground, ScrollView } from "react-native";
+import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet} from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 
+
+
+import { useState,useEffect } from 'react';
+
 export default function RewardsComponent() {
   const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
 
   const rewards = [
     { label: "NTUC\n$10 VOUCHER", status: "redeem" },
@@ -13,6 +19,37 @@ export default function RewardsComponent() {
     { label: "SHEIN\n$15 VOUCHER", status: "locked" },
     { label: "TRUST\n$15 CASHBACK", status: "locked" },
   ];
+
+  /*
+  async function fetchScoreboard() {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .limit(100);
+
+    }catch (e) {
+
+    }
+  }
+  */
+
+  if (loading) {
+    return (
+      <ImageBackground
+        source={require('@/assets/images/bg-city.png')}
+        resizeMode="cover"
+        style={styles.backgroundImage}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ marginTop: 16, color: 'white', fontFamily: 'PressStart2P', fontSize: 8 }}>
+            Loading...
+          </Text>
+        </View>
+      </ImageBackground>
+    );
+  }
 
   return (
     <ImageBackground
@@ -186,3 +223,102 @@ export default function RewardsComponent() {
     </ImageBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  topBarText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: 'white',
+  },
+  title: {
+    fontFamily: 'PressStart2P',
+    fontSize: 24,
+    color: '#FFA726',
+    textShadowColor: '#FF0044',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 1,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontFamily: 'PressStart2P',
+    fontSize: 10,
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  iconsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    marginBottom: 24,
+  },
+  tierCard: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 4,
+    borderColor: '#000',
+  },
+  tierHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  tierTitle: {
+    fontFamily: 'PressStart2P',
+    fontSize: 14,
+    color: '#000',
+  },
+  townRow: {
+    marginBottom: 12,
+  },
+  tierName: {
+    fontFamily: 'PressStart2P',
+    fontSize: 12,
+    color: '#1A237E',
+    marginBottom: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: '#1A237E',
+  },
+  backButton: {
+    backgroundColor: '#FFA726',
+    borderColor: '#FF4081',
+    borderWidth: 4,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 8,
+    marginTop: 24,
+    marginBottom: 40,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  },
+  backButtonText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 10,
+    color: '#3B0A00',
+    textAlign: 'center',
+  },
+});

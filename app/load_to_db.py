@@ -15,6 +15,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ELECTRICITY_FILE = os.path.join(BASE_DIR, "data", "Electricity_Data.csv")
 GAS_FILE = os.path.join(BASE_DIR, "data", "Gas_Data.csv")
+MAP_FILE = os.path.join(BASE_DIR, "Map_Data.csv")
 
 # Simulated date for testing (YYYY, M)
 YEAR = 2023
@@ -49,6 +50,30 @@ def load_csv_data(filepath, column_name, key_field="Town"):
     print(f"✅ Loaded {len(data)} towns from {os.path.basename(filepath)} ({column_name})")
     return data
 
+
+def load_map_csv_data(filepath, column_name, key_field="Town"):
+    data = {}
+    if not os.path.exists(filepath):
+        print(f"❌ File not found: {filepath}")
+        return data
+
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            town = row[key_field]
+            value = row.get(column_name)
+
+            if not value or value.strip() == "-":
+                continue
+
+            try:
+                usage = float(value)
+                data[town] = usage
+            except ValueError:
+                continue
+
+    print(f"✅ Loaded {len(data)} towns from {os.path.basename(filepath)} ({column_name})")
+    return data
 # ----------------------------
 # MAIN FUNCTION
 # ----------------------------
@@ -60,9 +85,10 @@ def upload_energy_data():
     # Load data from both files
     electricity_data = load_csv_data(ELECTRICITY_FILE, column_name)
     gas_data = load_csv_data(GAS_FILE, column_name)
+    map_data = load_csv_data(MAP_FILE, column_name)
 
     # Merge based on town name
-    all_towns = set(electricity_data.keys()) | set(gas_data.keys())
+    all_towns = set(electricity_data.keys()) | set(gas_data.keys()) | set(map_data.keys())
     print(f"🏙 Found total {len(all_towns)} towns to update")
 
     # Update Supabase table
@@ -75,7 +101,8 @@ def upload_energy_data():
         if town in gas_data:
             update_payload["gas"] = gas_data[town]
             green_score += gas_data[town]
-        
+
+        print(map_data[town])
         update_payload["green_score"] = green_score
         if not update_payload:
             continue
