@@ -168,8 +168,8 @@ export default function ScoreboardScreen() {
             /*<View className="items-end gap-1">
               <View className="flex-row gap-3">
                 <View className="items-center">
-                  <Text className="text-blue-600 text-xs font-medium">💧</Text>
-                  <Text className="text-xs text-gray-600">{item.water || 0}</Text>
+                  <Text className="text-blue-600 text-xs font-medium">⛽</Text>
+                  <Text className="text-xs text-gray-600">{item.gas || 0}</Text>
                 </View>
                 <View className="items-center">
                   <Text className="text-yellow-600 text-xs font-medium">⚡</Text>
@@ -177,7 +177,7 @@ export default function ScoreboardScreen() {
                 </View>
                 <View className="items-center">
                   <Text className="text-green-600 text-xs font-medium">♻️</Text>
-                  <Text className="text-xs text-gray-600">{item.recycle || 0}</Text>
+                  <Text className="text-xs text-gray-600">{item.green_score || 0}</Text>
                 </View>
               </View>
             </View>
@@ -249,7 +249,9 @@ import { Text } from '@/components/ui/text';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { ActivityIndicator } from 'react-native';
+
 import { RealtimeChannel } from '@supabase/supabase-js';
+import {fetchUserProfile} from '../lib/GetUser';
 
 const SCREEN_OPTIONS = {
   title: '',
@@ -269,11 +271,14 @@ export default function ScoreboardScreen() {
   const router = useRouter();
   const [scoreData, setScoreData] = useState<ScoreboardItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [greenScore, setGreenScore] = useState(true);
   const channelRef = useRef<RealtimeChannel | null>(null);
+
 
   useEffect(() => {
     fetchScoreboard();
     subscribeToScoreboard();
+    loadProfile();
     
     return () => {
       if (channelRef.current) {
@@ -282,21 +287,42 @@ export default function ScoreboardScreen() {
     };
   }, []);
 
+  
+  const loadProfile = async () => {
+    const userProfile =  await fetchUserProfile();
+    if (userProfile != null) {
+      setGreenScore(userProfile.green_score)
+    
+    }else  {
+
+    }
+    
+  };
+
   async function fetchScoreboard() {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('scoreboard')
         .select('*')
-        .order('green_score', { ascending: false })
         .limit(100);
 
       if (error) {
         console.error('Fetch error:', error);
         return;
       }
-      
-      setScoreData((data || []).filter(item => item != null) as ScoreboardItem[]);
+
+      const filtered_data = data.filter(item => { return (item != null && item.gas != null && item.electricity != null) } )
+      //Calculate Green score here
+      filtered_data.map(currentData => {
+        currentData.green_score = currentData.electricity + currentData.gas
+        return currentData
+      })
+
+      filtered_data.sort((a, b) => b.green_score - a.green_score)
+
+      console.log(filtered_data)
+      setScoreData((filtered_data || []) as ScoreboardItem[]);
     } catch (error) {
       console.error('Error fetching scoreboard:', error);
     } finally {
@@ -308,12 +334,12 @@ export default function ScoreboardScreen() {
     if (!payload.payload?.record) return;
     const newRecord = payload.payload.record as ScoreboardItem;
     setScoreData(prev => {
-      const filteredPrev = prev.filter(item => item != null);
+      const filteredPrev = prev.filter(item => { return (item != null && item.gas != null && item.electricity != null) } );
+
+
       const newData = [newRecord, ...filteredPrev];
       return newData
         .sort((a, b) => b.green_score - a.green_score)
-        .slice(0, 100)
-        .filter(item => item != null);
     });
   }
 
@@ -321,10 +347,17 @@ export default function ScoreboardScreen() {
     if (!payload.payload?.record) return;
     const updatedRecord = payload.payload.record as ScoreboardItem;
     setScoreData(prev => {
-      const filteredPrev = prev.filter(item => item != null);
+      const filteredPrev = prev.filter(item => { return (item != null && item.gas != null && item.electricity != null) } );
+
+
       const updatedData = filteredPrev.map(item => 
         item.id === updatedRecord.id ? updatedRecord : item
       );
+
+      updatedData.map(currentData => {
+        currentData.green_score = currentData.electricity + currentData.gas
+        return currentData
+      })
       return updatedData
         .sort((a, b) => b.green_score - a.green_score)
         .filter(item => item != null);
@@ -405,6 +438,7 @@ export default function ScoreboardScreen() {
 
   const tiersData = groupedByTiers();
 
+
   return (
     <ImageBackground
       source={require('../assets/images/bg-city.png')}
@@ -416,7 +450,7 @@ export default function ScoreboardScreen() {
         
         {/* Top Bar */}
         <View style={styles.topBar}>
-          <Text style={styles.topBarText}>Your Green Score: 843</Text>
+          <Text style={styles.topBarText}>Your Green Score: {greenScore}</Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <Text style={{ fontSize: 24 }}>📍</Text>
             <Text style={{ fontSize: 24 }}>📢</Text>
@@ -432,7 +466,7 @@ export default function ScoreboardScreen() {
         <View style={styles.iconsRow}>
           <Text style={{ fontSize: 32 }}>🏆</Text>
           <Text style={{ fontSize: 32 }}>⚡</Text>
-          <Text style={{ fontSize: 32 }}>💧</Text>
+          <Text style={{ fontSize: 32 }}>⛽</Text>
           <Text style={{ fontSize: 32 }}>✨</Text>
         </View>
 
@@ -455,9 +489,9 @@ export default function ScoreboardScreen() {
                   <View key={idx} style={styles.townRow}>
                     <Text style={styles.tierName}>{item.town_name}</Text>
                     <View style={styles.statsRow}>
-                      <Text style={styles.statText}>💧 {item.water || 0}</Text>
+                      <Text style={styles.statText}>⛽ {item.gas || 0}</Text>
                       <Text style={styles.statText}>⚡ {item.electricity || 0}</Text>
-                      <Text style={styles.statText}>♻️ {item.recycle || 0}</Text>
+                      <Text style={styles.statText}>♻️ {item.green_score || 0}</Text>
                     </View>
                   </View>
                 ))}
@@ -475,9 +509,9 @@ export default function ScoreboardScreen() {
                   <View key={idx} style={styles.townRow}>
                     <Text style={styles.tierName}>{item.town_name}</Text>
                     <View style={styles.statsRow}>
-                      <Text style={styles.statText}>💧 {item.water || 0}</Text>
+                      <Text style={styles.statText}>⛽ {item.gas || 0}</Text>
                       <Text style={styles.statText}>⚡ {item.electricity || 0}</Text>
-                      <Text style={styles.statText}>♻️ {item.recycle || 0}</Text>
+                      <Text style={styles.statText}>♻️ {item.green_score || 0}</Text>
                     </View>
                   </View>
                 ))}
@@ -495,9 +529,9 @@ export default function ScoreboardScreen() {
                   <View key={idx} style={styles.townRow}>
                     <Text style={styles.tierName}>{item.town_name}</Text>
                     <View style={styles.statsRow}>
-                      <Text style={styles.statText}>💧 {item.water || 0}</Text>
+                      <Text style={styles.statText}>⛽ {item.gas || 0}</Text>
                       <Text style={styles.statText}>⚡ {item.electricity || 0}</Text>
-                      <Text style={styles.statText}>♻️ {item.recycle || 0}</Text>
+                      <Text style={styles.statText}>♻️ {item.green_score || 0}</Text>
                     </View>
                   </View>
                 ))}
@@ -515,9 +549,9 @@ export default function ScoreboardScreen() {
                   <View key={idx} style={styles.townRow}>
                     <Text style={styles.tierName}>{item.town_name}</Text>
                     <View style={styles.statsRow}>
-                      <Text style={styles.statText}>💧 {item.water || 0}</Text>
+                      <Text style={styles.statText}>⛽ {item.gas || 0}</Text>
                       <Text style={styles.statText}>⚡ {item.electricity || 0}</Text>
-                      <Text style={styles.statText}>♻️ {item.recycle || 0}</Text>
+                      <Text style={styles.statText}>♻️ {item.green_score || 0}</Text>
                     </View>
                   </View>
                 ))}

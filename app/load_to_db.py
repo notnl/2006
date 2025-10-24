@@ -68,11 +68,15 @@ def upload_energy_data():
     # Update Supabase table
     for town in all_towns:
         update_payload = {}
+        green_score = 0 
         if town in electricity_data:
             update_payload["electricity"] = electricity_data[town]
+            green_score += electricity_data[town]
         if town in gas_data:
             update_payload["gas"] = gas_data[town]
-
+            green_score += gas_data[town]
+        
+        update_payload["green_score"] = green_score
         if not update_payload:
             continue
 
