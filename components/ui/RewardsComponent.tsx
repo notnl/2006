@@ -1,49 +1,96 @@
-import React from "react";
-import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-
-
-
-import { useState,useEffect } from 'react';
+import { supabase } from "@/lib/supabase";
 
 export default function RewardsComponent() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [rewards, setRewards] = useState<any[]>([]);
+  const [userScore, setUserScore] = useState<number>(0);
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: user, error: userErr } = await supabase
+          .from("userprofile")
+          .select("green_score")
+          .eq("nric", "S1234567I")
+          .single();
 
-  const rewards = [
-    { label: "NTUC\n$10 VOUCHER", status: "redeem" },
-    { label: "GRAB\n$5 VOUCHER", status: "redeem" },
-    { label: "NANDOS\nFREE CHICKEN", status: "redeem" },
-    { label: "SHEIN\n$15 VOUCHER", status: "locked" },
-    { label: "TRUST\n$15 CASHBACK", status: "locked" },
-  ];
+        if (userErr) throw userErr;
+        setUserScore(user?.green_score || 0);
 
-  /*
-  async function fetchScoreboard() {
+        const { data: rewardsData, error: rewardsErr } = await supabase
+          .from("rewards")
+          .select("*")
+          .order("id", { ascending: true });
+
+        if (rewardsErr) throw rewardsErr;
+        setRewards(rewardsData || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // redeem reward
+  async function handleRedeem(reward: any) {
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('challenges')
-        .select('*')
-        .limit(100);
+      if (!reward.available) {
+        Alert.alert("Unavailable", "This reward is currently out of stock.");
+        return;
+      }
 
-    }catch (e) {
+      if (userScore < 50) {
+        Alert.alert("Insufficient Points", "You need at least 50 points to redeem this reward.");
+        return;
+      }
 
+      const newScore = userScore - 50;
+
+
+      const { error: userErr } = await supabase
+        .from("userprofile")
+        .update({ green_score: newScore })
+        .eq("nric", "S1234567I");
+
+      if (userErr) throw userErr;
+
+      const { error: rewardErr } = await supabase
+        .from("rewards")
+        .update({ available: false })
+        .eq("id", reward.id);
+
+      if (rewardErr) throw rewardErr;
+
+      setUserScore(newScore);
+      setRewards((prev) =>
+        prev.map((r) =>
+          r.id === reward.id ? { ...r, available: false } : r
+        )
+      );
+
+      Alert.alert("Success!", `You redeemed ${reward.reward_name}.`);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Something went wrong while redeeming.");
     }
   }
-  */
 
   if (loading) {
     return (
       <ImageBackground
-        source={require('@/assets/images/bg-city.png')}
+        source={require("@/assets/images/bg-city.png")}
         resizeMode="cover"
         style={styles.backgroundImage}
       >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ marginTop: 16, color: 'white', fontFamily: 'PressStart2P', fontSize: 8 }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ marginTop: 16, color: "white", fontFamily: "PressStart2P", fontSize: 8 }}>
             Loading...
           </Text>
         </View>
@@ -68,7 +115,7 @@ export default function RewardsComponent() {
           marginBottom: 10,
         }}
       >
-        Your Green Score: 843
+        Your Green Score: {userScore}
       </Text>
 
       <Text
@@ -125,11 +172,10 @@ export default function RewardsComponent() {
                 width: "55%",
               }}
             >
-              {r.label}
+              {r.reward_name}
             </Text>
 
-            {/* button with gradient border */}
-            {r.status === "redeem" ? (
+            {r.available ? (
               <LinearGradient
                 colors={["#ff66cc", "#ff9933"]}
                 start={{ x: 0, y: 0 }}
@@ -146,6 +192,7 @@ export default function RewardsComponent() {
                     paddingHorizontal: 10,
                     borderRadius: 4,
                   }}
+                  onPress={() => handleRedeem(r)}
                 >
                   <Text
                     style={{
@@ -162,9 +209,9 @@ export default function RewardsComponent() {
             ) : (
               <Pressable
                 style={{
-                  backgroundColor: "#A9A9A9",
+                  backgroundColor: "#4CAF50",
                   borderWidth: 2,
-                  borderColor: "#707070",
+                  borderColor: "#2E7D32",
                   paddingVertical: 6,
                   paddingHorizontal: 10,
                   borderRadius: 4,
@@ -177,7 +224,7 @@ export default function RewardsComponent() {
                     color: "white",
                   }}
                 >
-                  LOCKED
+                  REDEEMED 
                 </Text>
               </Pressable>
             )}
@@ -185,7 +232,7 @@ export default function RewardsComponent() {
         ))}
       </ScrollView>
 
-      {/* back button with glow */}
+      {/* back button */}
       <LinearGradient
         colors={["#ff66cc", "#ff9933"]}
         start={{ x: 0, y: 0 }}
@@ -227,98 +274,7 @@ export default function RewardsComponent() {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  topBarText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: 'white',
-  },
-  title: {
-    fontFamily: 'PressStart2P',
-    fontSize: 24,
-    color: '#FFA726',
-    textShadowColor: '#FF0044',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 1,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  iconsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-    marginBottom: 24,
-  },
-  tierCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 4,
-    borderColor: '#000',
-  },
-  tierHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  tierTitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 14,
-    color: '#000',
-  },
-  townRow: {
-    marginBottom: 12,
-  },
-  tierName: {
-    fontFamily: 'PressStart2P',
-    fontSize: 12,
-    color: '#1A237E',
-    marginBottom: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#1A237E',
-  },
-  backButton: {
-    backgroundColor: '#FFA726',
-    borderColor: '#FF4081',
-    borderWidth: 4,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-    marginTop: 24,
-    marginBottom: 40,
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-  },
-  backButtonText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#3B0A00',
-    textAlign: 'center',
+    width: "100%",
+    height: "100%",
   },
 });
