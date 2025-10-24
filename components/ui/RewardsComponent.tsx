@@ -38,7 +38,7 @@ export default function RewardsComponent() {
     fetchData();
   }, []);
 
-  // redeem reward
+  // redeem rewards
   async function handleRedeem(reward: any) {
     try {
       if (!reward.available) {
