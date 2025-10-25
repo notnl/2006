@@ -112,7 +112,7 @@ def upload_energy_data():
             update_payload["gas"] = gas_data[town]
             gas_score = 100 / (1+(gas_data[town] / 70))**1.0
 
-        green_score = (elec_score + gas_score)/2
+        green_score = round((elec_score + gas_score)/2, 1)
         update_payload["green_score"] = green_score
 
         if town in map_data:
@@ -140,4 +140,5 @@ def upload_energy_data():
 # ----------------------------
 if __name__ == "__main__":
     upload_energy_data()
+
 
