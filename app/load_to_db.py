@@ -2,6 +2,7 @@ from supabase import create_client, Client
 import csv
 import os
 import datetime
+import json
 
 # ----------------------------
 # CONFIGURATION
@@ -15,7 +16,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ELECTRICITY_FILE = os.path.join(BASE_DIR, "data", "Electricity_Data.csv")
 GAS_FILE = os.path.join(BASE_DIR, "data", "Gas_Data.csv")
-MAP_FILE = os.path.join(BASE_DIR, "Map_Data.csv")
+MAP_FILE = os.path.join(BASE_DIR, "data/Map_Data.csv")
 
 # Simulated date for testing (YYYY, M)
 YEAR = 2023
@@ -51,7 +52,7 @@ def load_csv_data(filepath, column_name, key_field="Town"):
     return data
 
 
-def load_map_csv_data(filepath, column_name, key_field="Town"):
+def load_map_csv_data(filepath, key_field="Town"):
     data = {}
     if not os.path.exists(filepath):
         print(f"❌ File not found: {filepath}")
@@ -60,19 +61,28 @@ def load_map_csv_data(filepath, column_name, key_field="Town"):
     with open(filepath, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
+            #print(row)
             town = row[key_field]
-            value = row.get(column_name)
+            value = row.get('vertices')
+            #print(town)
+
 
             if not value or value.strip() == "-":
                 continue
 
             try:
-                usage = float(value)
-                data[town] = usage
+                verticesArray = value.split('|');
+                saveArr = []
+                for i in verticesArray:
+                    for j in i.split(','):
+                        saveArr.append(float(j))
+
+                data[town] = saveArr
+                
             except ValueError:
                 continue
 
-    print(f"✅ Loaded {len(data)} towns from {os.path.basename(filepath)} ({column_name})")
+    print(f"✅ Loaded {len(data)} towns from {os.path.basename(filepath)}")
     return data
 # ----------------------------
 # MAIN FUNCTION
@@ -85,8 +95,8 @@ def upload_energy_data():
     # Load data from both files
     electricity_data = load_csv_data(ELECTRICITY_FILE, column_name)
     gas_data = load_csv_data(GAS_FILE, column_name)
-    map_data = load_csv_data(MAP_FILE, column_name)
-
+    map_data = load_map_csv_data(MAP_FILE)
+    #print(
     # Merge based on town name
     all_towns = set(electricity_data.keys()) | set(gas_data.keys()) | set(map_data.keys())
     print(f"🏙 Found total {len(all_towns)} towns to update")
@@ -105,9 +115,13 @@ def upload_energy_data():
         green_score = (elec_score + gas_score)/2
         print(map_data[town])
         update_payload["green_score"] = green_score
+
+        if town in map_data:
+            update_payload["vertices"] =  (map_data[town])
+            #print(map_data[town])
+
         if not update_payload:
             continue
-
         response = (
             supabase.table("scoreboard")
             .update(update_payload)

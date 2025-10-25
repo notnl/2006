@@ -17,6 +17,7 @@ interface ScoreboardItem {
   id: number;
   town_name: string;
   green_score: number;
+  gas: number;
   water?: number;
   electricity?: number;
   recycle?: number;
