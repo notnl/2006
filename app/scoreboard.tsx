@@ -70,7 +70,12 @@ export default function ScoreboardScreen() {
       const filtered_data = data.filter(item => { return (item != null && item.gas != null && item.electricity != null) } )
       //Calculate Green score here
       filtered_data.map(currentData => {
-        currentData.green_score = currentData.electricity + currentData.gas
+        const electricity = currentData.electricity ?? 0;
+        const gas = currentData.gas ?? 0;
+        // Copied from load_to_db.py
+        const elec_score = 100 / (1 + (electricity / 410))**1.3;
+        const gas_score = 100 / (1 + (gas / 70))**1.0;
+        currentData.green_score = ((elec_score + gas_score) / 2).toFixed(1);
         return currentData
       })
 
