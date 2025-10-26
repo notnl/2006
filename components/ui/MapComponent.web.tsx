@@ -182,9 +182,9 @@ export default function MapComponent() {
             >
               <div style={{ minWidth: 180 }}>
                 <strong>{selected.town_name}</strong><br />
-                {selected.electricity && `⚡ Electricity: ${selected.electricity} kWh<br />`}
-                {selected.gas && `⛽ Gas: ${selected.gas} L<br />`}
-                {selected.recycle && `♻️ Recycle: ${selected.recycle} kg<br />`}
+                {selected.electricity && `⚡ Electricity: ${selected.electricity} kWh`}<br />
+                {selected.gas && `⛽ Gas: ${selected.gas} L`}<br />
+                {selected.recycle && `♻️ Recycle: ${selected.recycle} kg`}<br />
                 🌱 Green Score: {selected.green_score} pts<br />
                 <button style={{ marginTop: 8 }} onClick={handlePopupClose}>Close</button>
               </div>

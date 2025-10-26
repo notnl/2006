@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, ImageBackground, ScrollView, Modal } from "react-native";
+import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet, Modal } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -154,8 +154,8 @@ export default function ChallengesComponent() {
     <ImageBackground
       source={require("@/assets/images/bg-city.png")}
       resizeMode="cover"
-      style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 20 }}
-    >
+      style={styles.backgroundImage}
+  >
       {/* Header */}
       <Text
         style={{
@@ -637,3 +637,15 @@ export default function ChallengesComponent() {
     </ImageBackground>
   );
 }
+
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+});

@@ -92,7 +92,7 @@ export default function HomeScreen() {
             style={{
               fontFamily: "PressStart2P",
               color: "#00FFAA",
-              fontSize: 20,
+              fontSize: 30,
               textShadowColor: "#FF0044",
               textShadowOffset: { width: 3, height: 3 },
               textShadowRadius: 1,
@@ -107,7 +107,7 @@ export default function HomeScreen() {
             style={{
               fontFamily: "PressStart2P",
               color: "white",
-              fontSize: 8,
+              fontSize: 15,
               textAlign: "center",
               marginBottom: 4,
             }}
@@ -119,9 +119,10 @@ export default function HomeScreen() {
             style={{
               fontFamily: "PressStart2P",
               color: "white",
-              fontSize: 8,
+              fontSize: 15,
               textAlign: "center",
               marginBottom: 40,
+              marginTop: 10
             }}
           >
             Your Green Score: {greenScore}

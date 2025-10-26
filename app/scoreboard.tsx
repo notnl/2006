@@ -220,7 +220,10 @@ export default function ScoreboardScreen() {
 
         {/* Title */}
         <Text style={styles.title}>SCOREBOARD</Text>
-        <Text style={styles.subtitle}>Week 35, 5 days left</Text>
+        <Text className="text-white text-center mb-4" style={{fontFamily: 'PressStart2P', fontSize: 10}}>
+          Week 35, 5 days left
+        </Text>
+        {/* used inline as the text appears black due to global theme system (important doesnt work) */}
 
         {/* Icons Row */}
         <View style={styles.iconsRow}>
@@ -352,21 +355,21 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'PressStart2P',
-    fontSize: 24,
+    fontSize: 26,
     color: '#FFA726',
     textShadowColor: '#FF0044',
-    textShadowOffset: { width: 2, height: 2 },
+    textShadowOffset: { width: 3, height: 3 },
     textShadowRadius: 1,
     textAlign: 'center',
     marginBottom: 8,
   },
-  subtitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
+  // subtitle: {
+    // fontFamily: 'PressStart2P',
+    // fontSize: 10,
+    // color: 'white !important',
+    // textAlign: 'center',
+    // marginBottom: 16,
+  // },
   iconsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
