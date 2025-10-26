@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "@/lib/supabase";
@@ -9,18 +17,30 @@ export default function RewardsComponent() {
   const [loading, setLoading] = useState(true);
   const [rewards, setRewards] = useState<any[]>([]);
   const [userScore, setUserScore] = useState<number>(0);
+  const [badges, setBadges] = useState<any>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data: user, error: userErr } = await supabase
           .from("userprofile")
-          .select("green_score")
+          .select(
+            "green_score, badge_water_saver, badge_recycler, badge_energy_efficient, badge_earth_guardian"
+          )
           .eq("nric", "S1234567I")
           .single();
 
         if (userErr) throw userErr;
+
         setUserScore(user?.green_score || 0);
+
+        // set badge values
+        setBadges({
+          water: user?.badge_water_saver,
+          recycle: user?.badge_recycler,
+          energy: user?.badge_energy_efficient,
+          earth: user?.badge_earth_guardian,
+        });
 
         const { data: rewardsData, error: rewardsErr } = await supabase
           .from("rewards")
@@ -28,6 +48,7 @@ export default function RewardsComponent() {
           .order("id", { ascending: true });
 
         if (rewardsErr) throw rewardsErr;
+
         setRewards(rewardsData || []);
       } catch (err) {
         console.error(err);
@@ -35,6 +56,7 @@ export default function RewardsComponent() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
@@ -46,7 +68,10 @@ export default function RewardsComponent() {
       }
 
       if (userScore < 50) {
-        Alert.alert("Insufficient Points", "You need at least 50 points to redeem this reward.");
+        Alert.alert(
+          "Insufficient Points",
+          "You need at least 50 points to redeem this reward."
+        );
         return;
       }
 
@@ -68,9 +93,7 @@ export default function RewardsComponent() {
 
       setUserScore(newScore);
       setRewards((prev) =>
-        prev.map((r) =>
-          r.id === reward.id ? { ...r, available: false } : r
-        )
+        prev.map((r) => (r.id === reward.id ? { ...r, available: false } : r))
       );
 
       Alert.alert("Success!", `You redeemed ${reward.reward_name}.`);
@@ -87,8 +110,17 @@ export default function RewardsComponent() {
         resizeMode="cover"
         style={styles.backgroundImage}
       >
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ marginTop: 16, color: "white", fontFamily: "PressStart2P", fontSize: 8 }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text
+            style={{
+              marginTop: 16,
+              color: "white",
+              fontFamily: "PressStart2P",
+              fontSize: 8,
+            }}
+          >
             Loading...
           </Text>
         </View>
@@ -104,10 +136,48 @@ export default function RewardsComponent() {
     >
       {/* Header */}
       <Text style={styles.greenScoreText}>Your Green Score: {userScore}</Text>
-
       <Text style={styles.rewardsHeader}>REWARDS</Text>
 
-      {/* Scrollable rewards list with light blue background */}
+      {/* BADGES SECTION */}
+      <View style={styles.badgeContainer}>
+        <Text style={styles.badgeHeader}>BADGES</Text>
+        <View style={styles.badgeRow}>
+          <Text
+            style={[
+              styles.badgeIcon,
+              !badges.water && styles.lockedBadge,
+            ]}
+          >
+            {badges.water ? "❄️" : "🔒"}
+          </Text>
+          <Text
+            style={[
+              styles.badgeIcon,
+              !badges.recycle && styles.lockedBadge,
+            ]}
+          >
+            {badges.recycle ? "♻️" : "🔒"}
+          </Text>
+          <Text
+            style={[
+              styles.badgeIcon,
+              !badges.energy && styles.lockedBadge,
+            ]}
+          >
+            {badges.energy ? "⚡" : "🔒"}
+          </Text>
+          <Text
+            style={[
+              styles.badgeIcon,
+              !badges.earth && styles.lockedBadge,
+            ]}
+          >
+            {badges.earth ? "🌍" : "🔒"}
+          </Text>
+        </View>
+      </View>
+
+      {/* Rewards list */}
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={{ alignItems: "center" }}
@@ -123,7 +193,10 @@ export default function RewardsComponent() {
                 end={{ x: 1, y: 1 }}
                 style={styles.redeemGradient}
               >
-                <Pressable style={styles.redeemButton} onPress={() => handleRedeem(r)}>
+                <Pressable
+                  style={styles.redeemButton}
+                  onPress={() => handleRedeem(r)}
+                >
                   <Text style={styles.redeemButtonText}>REDEEM NOW</Text>
                 </Pressable>
               </LinearGradient>
@@ -179,6 +252,32 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1,
     marginBottom: 20,
+  },
+  badgeContainer: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    width: "80%",
+    alignItems: "center",
+  },
+  badgeHeader: {
+    fontFamily: "PressStart2P",
+    fontSize: 12,
+    color: "#5E35B1",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  badgeRow: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    width: "100%",
+  },
+  badgeIcon: {
+    fontSize: 32,
+  },
+  lockedBadge: {
+    opacity: 0.4,
   },
   scrollContainer: {
     backgroundColor: "rgba(180,220,255,0.8)",
