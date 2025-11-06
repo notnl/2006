@@ -1,14 +1,17 @@
+import { ImageBackground} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input } from '@/views/ui/input';
 import { Text } from '@/views/ui/text';
 import { form_style } from '@/app/styles/form_style';
-
 import { Pressable, type TextInput, View, Alert} from 'react-native';
-import { supabase } from '../lib/supabase';
 import { useState, useRef } from 'react';
+import { useUser } from '@/app/context/UserProfileContext'; 
+
+import {background_style}  from '@/app/styles/background_style'; 
 
 export default function SignInForm() {
   const router = useRouter();
+  const { signIn } = useUser(); // Get the signIn function from context
 
   const [nric, setNric] = useState('');
   const [password, setPassword] = useState('');
@@ -39,16 +42,14 @@ export default function SignInForm() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: `${nric}@nric.user`,
-        password: password,
-      });
+      // Use the signIn function from context instead of direct supabase call
+      const success = await signIn(nric, password);
 
-      if (error) {
-        Alert.alert('Sign In Failed', error.message);
-      } else {
+      if (success) {
         Alert.alert('Success', 'Signed in successfully!');
         router.replace('/menu');
+      } else {
+        Alert.alert('Sign In Failed', 'Invalid NRIC or password');
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
@@ -58,16 +59,17 @@ export default function SignInForm() {
   }
 
   async function handleSignUp() {
-    router.push('/login/register');
+    router.push('/auth/register');
   }
 
   async function handleForgotPassword() {
     Alert.alert('Password Reset', 'Please contact administrator to reset your password');
   }
 
-  return (
+
+return (
+
     <View style={form_style.container}>
-      {/* Main Card */}
       <View style={form_style.card}>
         {/* Title */}
         <Text style={form_style.title}>Sign in to Green Quest</Text>
@@ -77,7 +79,7 @@ export default function SignInForm() {
         <View style={form_style.inputContainer}>
           <Text style={form_style.label}>NRIC</Text>
           <Input
-            placeholder="S12345678I"
+            placeholder="S1234567A"
             placeholderTextColor="#666"
             autoCapitalize="none"
             autoCorrect={false}
@@ -130,6 +132,5 @@ export default function SignInForm() {
         </Pressable>
       </View>
     </View>
-  );
+);
 }
-

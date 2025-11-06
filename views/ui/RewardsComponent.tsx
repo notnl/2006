@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,125 +6,21 @@ import {
   ImageBackground,
   ScrollView,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { supabase } from "@/lib/supabase";
+import { useRewards } from '@/app/model/reward_model';
 
-export default function RewardsComponent() {
+import  Loading  from '@/views/ui/LoadingComponent';
+
+
+export default function RewardsView() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [rewards, setRewards] = useState<any[]>([]);
-  const [userScore, setUserScore] = useState<number>(0);
-  const [badges, setBadges] = useState<any>({});
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: user, error: userErr } = await supabase
-          .from("userprofile")
-          .select(
-            "green_score, badge_water_saver, badge_recycler, badge_energy_efficient, badge_earth_guardian"
-          )
-          .eq("nric", "S1234567I")
-          .single();
-
-        if (userErr) throw userErr;
-
-        setUserScore(user?.green_score || 0);
-
-        // set badge values
-        setBadges({
-          water: user?.badge_water_saver,
-          recycle: user?.badge_recycler,
-          energy: user?.badge_energy_efficient,
-          earth: user?.badge_earth_guardian,
-        });
-
-        const { data: rewardsData, error: rewardsErr } = await supabase
-          .from("rewards")
-          .select("*")
-          .order("id", { ascending: true });
-
-        if (rewardsErr) throw rewardsErr;
-
-        setRewards(rewardsData || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  async function handleRedeem(reward: any) {
-    try {
-      if (!reward.available) {
-        Alert.alert("Unavailable", "This reward is currently out of stock.");
-        return;
-      }
-
-      if (userScore < 50) {
-        Alert.alert(
-          "Insufficient Points",
-          "You need at least 50 points to redeem this reward."
-        );
-        return;
-      }
-
-      const newScore = userScore - 50;
-
-      const { error: userErr } = await supabase
-        .from("userprofile")
-        .update({ green_score: newScore })
-        .eq("nric", "S1234567I");
-
-      if (userErr) throw userErr;
-
-      const { error: rewardErr } = await supabase
-        .from("rewards")
-        .update({ available: false })
-        .eq("id", reward.id);
-
-      if (rewardErr) throw rewardErr;
-
-      setUserScore(newScore);
-      setRewards((prev) =>
-        prev.map((r) => (r.id === reward.id ? { ...r, available: false } : r))
-      );
-
-      Alert.alert("Success!", `You redeemed ${reward.reward_name}.`);
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Something went wrong while redeeming.");
-    }
-  }
+  const { loading, rewards, userScore, badges, handleRedeem } = useRewards();
 
   if (loading) {
     return (
-      <ImageBackground
-        source={require("@/assets/images/bg-city.png")}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text
-            style={{
-              marginTop: 16,
-              color: "white",
-              fontFamily: "PressStart2P",
-              fontSize: 8,
-            }}
-          >
-            Loading...
-          </Text>
-        </View>
-      </ImageBackground>
+        <Loading/>
     );
   }
 
@@ -142,36 +38,16 @@ export default function RewardsComponent() {
       <View style={styles.badgeContainer}>
         <Text style={styles.badgeHeader}>BADGES</Text>
         <View style={styles.badgeRow}>
-          <Text
-            style={[
-              styles.badgeIcon,
-              !badges.water && styles.lockedBadge,
-            ]}
-          >
+          <Text style={[styles.badgeIcon, !badges.water && styles.lockedBadge]}>
             {badges.water ? "❄️" : "🔒"}
           </Text>
-          <Text
-            style={[
-              styles.badgeIcon,
-              !badges.recycle && styles.lockedBadge,
-            ]}
-          >
+          <Text style={[styles.badgeIcon, !badges.recycle && styles.lockedBadge]}>
             {badges.recycle ? "♻️" : "🔒"}
           </Text>
-          <Text
-            style={[
-              styles.badgeIcon,
-              !badges.energy && styles.lockedBadge,
-            ]}
-          >
+          <Text style={[styles.badgeIcon, !badges.energy && styles.lockedBadge]}>
             {badges.energy ? "⚡" : "🔒"}
           </Text>
-          <Text
-            style={[
-              styles.badgeIcon,
-              !badges.earth && styles.lockedBadge,
-            ]}
-          >
+          <Text style={[styles.badgeIcon, !badges.earth && styles.lockedBadge]}>
             {badges.earth ? "🌍" : "🔒"}
           </Text>
         </View>
@@ -180,13 +56,13 @@ export default function RewardsComponent() {
       {/* Rewards list */}
       <ScrollView
         style={styles.scrollContainer}
-        contentContainerStyle={{ alignItems: "center" }}
+        contentContainerStyle={styles.scrollContent}
       >
-        {rewards.map((r, index) => (
+        {rewards.map((reward, index) => (
           <View key={index} style={styles.rewardCard}>
-            <Text style={styles.rewardName}>{r.reward_name}</Text>
+            <Text style={styles.rewardName}>{reward.reward_name}</Text>
 
-            {r.available ? (
+            {reward.available ? (
               <LinearGradient
                 colors={["#ff66cc", "#ff9933"]}
                 start={{ x: 0, y: 0 }}
@@ -195,7 +71,7 @@ export default function RewardsComponent() {
               >
                 <Pressable
                   style={styles.redeemButton}
-                  onPress={() => handleRedeem(r)}
+                  onPress={() => handleRedeem(reward)}
                 >
                   <Text style={styles.redeemButtonText}>REDEEM NOW</Text>
                 </Pressable>
@@ -235,6 +111,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    color: "white",
+    fontFamily: "PressStart2P",
+    fontSize: 8,
   },
   greenScoreText: {
     fontFamily: "PressStart2P",
@@ -285,6 +167,9 @@ const styles = StyleSheet.create({
     width: "90%",
     paddingVertical: 10,
     marginBottom: 20,
+  },
+  scrollContent: {
+    alignItems: "center",
   },
   rewardCard: {
     backgroundColor: "white",

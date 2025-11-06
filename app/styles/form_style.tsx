@@ -47,6 +47,8 @@ const form_style = StyleSheet.create({
     backgroundColor: 'rgba(50, 50, 50, 0.8)',
     borderColor: '#00FFAA',
     borderWidth: 2,
+
+    color: 'white',
     borderRadius: 8,
     fontFamily: 'PressStart2P',
     fontSize: 10,

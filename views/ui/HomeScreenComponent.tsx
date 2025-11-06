@@ -1,62 +1,25 @@
-import React from "react";
-import { View, Text, ImageBackground, Pressable } from "react-native";
+import { View, Text, ImageBackground, Pressable ,StyleSheet} from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { useColorScheme } from "nativewind";
-
 import { supabase } from '../../lib/supabase';
 import type { Href } from "expo-router";
 
-
 import { useState,useEffect } from 'react';
-import LoadingComponent from './LoadingComponent'
 
-import  SignInForm  from '@/views/sign-in-form';
-import {fetchUserProfile} from '../../lib/GetUser';
+import {useUser} from '@/app/context/UserProfileContext'
 
-export default function HomeScreen() {
+import { home_styles} from '@/app/styles/homescreen_style'
+
+export default function HomeScreen() { //There is no need to spilt to model,since there are no logic used
   const router = useRouter();
   const { colorScheme } = useColorScheme();
   const [loading,setLoading] = useState(false);
-  const [residency,setResidency] = useState('');
-  const [greenScore,setGreenScore] = useState(-1);
-
-    //const fetchProfile = async () => {
-    //  try {
-    //  const { data: { session } } = await supabase.auth.getSession();
-    //  const userId = session?.user?.id;
-    //  }
-    //   catch (err) {
-    //    console.error('fetchProfile error', err);
-    //    Alert.alert('Error fetching profile', (err as Error).message);
-    //  } finally {
-
-    //  }
-    //}
-
-    //fetchProfile();
-  //
   
+  const { profile } = useUser(); 
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
-    setLoading(true);
-    const userProfile =  await fetchUserProfile();
-    if (userProfile != null) {
-      setResidency(userProfile.town)
-      setGreenScore(userProfile.green_score)
+  const greenScore = profile?.green_score ?? 0; // We use ? here, initially i used let , which adds unnecessary complexity 
+  const residency = profile?.town ?? 'Unknown';  // So can be null
     
-      setLoading(false);
-    }else  {
-
-    }
-    
-  };
-
-//fetchProfile()
-
     
   const routes: { label: string; path: Href }[] = [
 
@@ -67,99 +30,46 @@ export default function HomeScreen() {
     { label: "CHALLENGES", path: "/challenges" },
   ];
 
-  return (
-    <>
-      <Stack.Screen options={{ headerShown: false }} />
-      <ImageBackground
-        source={require("../../assets/images/bg-city.png")}
-        resizeMode="cover"
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(0,0,0,0.4)",
-            width: "100%",
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: "PressStart2P",
-              color: "#00FFAA",
-              fontSize: 30,
-              textShadowColor: "#FF0044",
-              textShadowOffset: { width: 3, height: 3 },
-              textShadowRadius: 1,
-              textAlign: "center",
-              marginBottom: 10,
-            }}
-          >
-            GREEN{"\n"}QUEST
-          </Text>
+return (
+    <ImageBackground
+      source={require('@/assets/images/bg-city.png')}
+      resizeMode="cover"
+      style={styles.backgroundImage}
+    >
+    <Stack.Screen options={{ headerShown: false }} />
+      <View style={home_styles.container}>
+        <Text style={home_styles.title}>
+          GREEN{"\n"}QUEST
+        </Text>
 
-          <Text
-            style={{
-              fontFamily: "PressStart2P",
-              color: "white",
-              fontSize: 15,
-              textAlign: "center",
-              marginBottom: 4,
-            }}
-          >
-            Welcome,{"\n"} {residency} Resident!
-          </Text>
-          
-          <Text
-            style={{
-              fontFamily: "PressStart2P",
-              color: "white",
-              fontSize: 15,
-              textAlign: "center",
-              marginBottom: 40,
-              marginTop: 10
-            }}
-          >
-            Your Green Score: {greenScore}
-          </Text>
+        <Text style={home_styles.welcomeText}>
+          Welcome,{"\n"} {residency} Resident!
+        </Text>
+        
+        <Text style={home_styles.scoreText}>
+          Your Green Score: {greenScore}
+        </Text>
 
-          {routes.map(({ label, path }) => (
-            <Pressable
-              key={label}
-              onPress={() => router.push(path)}
-              style={{
-                backgroundColor: "#FFA726",
-                borderColor: "#C35C00",
-                borderWidth: 3,
-                paddingVertical: 14,
-                paddingHorizontal: 50,
-                borderRadius: 6,
-                marginBottom: 16,
-                shadowColor: "#6A1B9A",
-                shadowOffset: { width: 4, height: 4 },
-                shadowOpacity: 1,
-                shadowRadius: 0,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: "PressStart2P",
-                  fontSize: 10,
-                  color: "#3B0A00",
-                  textAlign: "center",
-                }}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </ImageBackground>
-    </>
-  );
+        {routes.map(({ label, path }) => (
+          <Pressable
+            key={label}
+            onPress={() => router.push(path)}
+            style={home_styles.menuButton}
+          >
+            <Text style={home_styles.menuButtonText}>
+              {label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </ImageBackground>
+);
 }
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+})

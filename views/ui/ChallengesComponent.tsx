@@ -3,6 +3,8 @@ import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from "
 import { useRouter } from 'expo-router';
 import { useChallenges } from '@/app/model/challenge_model';
 
+import  Loading  from '@/views/ui/LoadingComponent';
+
 export default function ChallengesComponent() {
   const router = useRouter();
   const { 
@@ -15,20 +17,14 @@ export default function ChallengesComponent() {
   } = useChallenges(); 
   //Our logic is all handled at the model , from lec slides : Contains the processing (operations) and the data involved.
 
-  if (loading || questions.length === 0) {
+  if (loading) {
     return (
-      <View>
-        <Text>Loading...</Text>
-      </View>
+        <Loading/>
     );
   }
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/bg-city.png")}
-      resizeMode="cover"
-      style={styles.backgroundImage}
-    >
+    <>
       {/* Header */}
       <Text style={styles.header}>
         QUIZ
@@ -113,7 +109,7 @@ export default function ChallengesComponent() {
           BACK TO HOME
         </Text>
       </Pressable>
-    </ImageBackground>
+      </>
   );
 }
 

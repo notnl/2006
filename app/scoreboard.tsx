@@ -6,7 +6,9 @@ import { Link, Stack } from 'expo-router';
 import { MoonStarIcon, StarIcon, SunIcon } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
-import { Image, type ImageStyle, View } from 'react-native';
+import { Image, type ImageStyle, View,ImageBackground } from 'react-native';
+import {background_style}  from '@/app/styles/background_style'; 
+
 
 import  ScoreboardComponent  from '@/views/ui/ScoreboardComponent';
 
@@ -34,8 +36,14 @@ export default function ScoreboardScreen() {
     <>
       <Stack.Screen options={SCREEN_OPTIONS} />
 
+      <ImageBackground
+        source={require('@/assets/images/bg-city.png')}
+        resizeMode="cover"
+        style={background_style.backgroundImage}
+      >
         <ScoreboardComponent/>
 
+      </ImageBackground>
     </>
   );
 }

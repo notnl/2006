@@ -11,13 +11,7 @@ export default function LoginScreen() {
   return (
     <>
       <Stack.Screen options={SCREEN_OPTIONS} />
-      <ImageBackground
-        source={require('../../assets/images/bg-city.png')}
-        resizeMode="cover"
-        style={styles.background}
-      >
         <SignInForm />
-      </ImageBackground>
     </>
   );
 }

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { Alert } from 'react-native';
+import withTimeout from '@/lib/timeout.ts'; //Timeout utility function from stack overflow
 
 export interface ChallengeQuestion {
   id: number;
@@ -10,6 +12,7 @@ export interface ChallengeQuestion {
   answer: string;
   points: number;
 }
+
 
 export function useChallenges() {
   const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
@@ -48,36 +51,77 @@ export function useChallenges() {
 
   // Load questions and user profile
   useEffect(() => {
-    loadQuestions();
-    loadUserProfile();
+    const initializeData = async () => {
+      setLoading(true);
+      try {
+        // Run both operations with timeout protection
+          await loadQuestions()
+          await loadUserProfile()
+      } catch (error) {
+        console.error('Error initializing challenges:', error);
+        // Don't show alert here as individual functions handle their own errors
+      } finally {
+        setLoading(false); // GUARANTEED to run
+      }
+    };
+
+    initializeData();
   }, []);
 
   const loadQuestions = async () => {
-    setLoading(true);
     try {
-      const { data, error } = await supabase.from("challenges").select("*").limit(5);
-      if (!error && data) {
+      const { data, error } = await withTimeout(
+        supabase.from("challenges").select("*").limit(5),
+        5000 // 10 second timeout
+      );
+      
+      if (error) {
+        console.error('Error loading questions:', error);
+        return;
+      }
+      
+      if (data) {
         setQuestions(data as ChallengeQuestion[]);
       }
     } catch (error) {
-      console.error('Error loading questions:', error);
-    } finally {
+      console.error('Error in loadQuestions:', error);
+      if (error.message.includes('timed out')) {
+        Alert.alert('Timeout', 'Failed to load questions. Please check your connection.');
+      }
+    }finally {
       setLoading(false);
     }
   };
 
   const loadUserProfile = async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) return;
+      const { data: { user }, error: authError } = await withTimeout(
+        supabase.auth.getUser(),
+        5000 // 10 second timeout
+      );
+
+      if (authError || !user) {
+        console.error('Auth error or no user:', authError);
+        throw new Error('No user on the session!') 
+      }
       
       setUser(user);
 
-      const { data: profile } = await supabase
-        .from("userprofile")
-        .select("green_score, quiz_answers")
-        .eq("id", user.id)
-        .single();
+      const { data: profile, error: profileError } = await withTimeout(
+        supabase
+          .from("userprofile")
+          .select("green_score, quiz_answers")
+          .eq("id", user.id)
+          .single(),
+        5000 // 10 second timeout
+      );
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+
+        throw new Error('Profile not loaded') 
+        return;
+      }
 
       if (profile?.green_score != null) {
         setGreenScore(profile.green_score);
@@ -87,7 +131,14 @@ export function useChallenges() {
         setSelectedAnswers(profile.quiz_answers);
       }
     } catch (error) {
-      console.error('Error loading user profile:', error);
+      console.error('Error in loadUserProfile:', error);
+      if (error.message.includes('timed out')) {
+        Alert.alert('Timeout', 'Failed to load user profile. Please check your connection.');
+      }
+      // Don't throw - let the function complete
+    }finally{
+
+      setLoading(false);
     }
   };
 
@@ -112,15 +163,27 @@ export function useChallenges() {
     }
 
     if (user) {
-      const updateData: any = { quiz_answers: newSelected };
-      if (isCorrect) {
-        updateData.green_score = isCorrect ? greenScore + (points || 1) : greenScore;
-      }
+      try {
+        const updateData: any = { quiz_answers: newSelected };
+        if (isCorrect) {
+          updateData.green_score = greenScore + (points || 1);
+        }
 
-      await supabase
-        .from("userprofile")
-        .update(updateData)
-        .eq("id", user.id);
+        await withTimeout(
+          supabase
+            .from("userprofile")
+            .update(updateData)
+            .eq("id", user.id),
+          5000 // 10 second timeout for update
+        );
+      } catch (error) {
+        console.error('Error saving answer:', error);
+        if (error.message.includes('timed out')) {
+          Alert.alert('Timeout', 'Failed to save your answer. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to save your answer.');
+        }
+      }
     }
   };
 
@@ -131,7 +194,15 @@ export function useChallenges() {
     timeLeft,
     loading,
     handleAnswer,
-    refreshQuestions: loadQuestions,
-    refreshProfile: loadUserProfile,
+    refreshQuestions: async () => {
+      setLoading(true);
+      await loadQuestions();
+      setLoading(false);
+    },
+    refreshProfile: async () => {
+      setLoading(true);
+      await loadUserProfile();
+      setLoading(false);
+    },
   };
 }

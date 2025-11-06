@@ -68,7 +68,7 @@ export default function SignUpForm() {
             {
               text: 'OK',
               onPress: () => {
-                router.navigate('/login/login');
+                router.navigate('/auth/login');
               },
             },
           ]

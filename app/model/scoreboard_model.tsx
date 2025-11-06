@@ -54,27 +54,6 @@ export function useScoreboardModel() {
     }
   };
 
-  // Load user profile
-  const loadProfile = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('userprofile')
-        .select('green_score')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-      if (data?.green_score != null) {
-        setGreenScore(data.green_score);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
-
   // Real-time update handlers
   const handleScoreboardInsert = (payload: any) => {
     if (!payload.payload?.record) return;
@@ -151,7 +130,6 @@ export function useScoreboardModel() {
   // Initial data load
   useEffect(() => {
     loadScoreboard();
-    loadProfile();
     subscribeToRealtimeUpdates();
 
     return () => {
@@ -166,6 +144,5 @@ export function useScoreboardModel() {
     greenScore,
     loading,
     refreshScoreboard: loadScoreboard,
-    refreshProfile: loadProfile,
   };
 }

@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { useScoreboardModel, ScoreboardItem } from '@/app/model/scoreboard_model';
 
+import  Loading  from '@/views/ui/LoadingComponent';
+
 const SCREEN_OPTIONS = {
   title: '',
   headerTransparent: true,
@@ -43,57 +45,24 @@ export default function ScoreboardComponent() {
   };
 
   if (loading) {
+
     return (
-      <ImageBackground
-        source={require('@/assets/images/bg-city.png')}
-        resizeMode="cover"
-        style={styles.backgroundImage}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Stack.Screen options={SCREEN_OPTIONS} />
-          <ActivityIndicator size="large" color="#00FFAA" />
-          <Text style={{ marginTop: 16, color: 'white', fontFamily: 'PressStart2P', fontSize: 8 }}>
-            Loading...
-          </Text>
-        </View>
-      </ImageBackground>
+        <Loading/>
     );
   }
 
   const tiersData = groupedByTiers();
 
   return (
-    <ImageBackground
-      source={require('@/assets/images/bg-city.png')}
-      resizeMode="cover"
-      style={styles.backgroundImage}
-    >
-      <Stack.Screen options={SCREEN_OPTIONS} />
+    <>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingTop: 60 }}>
         
-        {/* Top Bar */}
-        <View style={styles.topBar}>
-          <Text style={styles.topBarText}>Your Green Score: {greenScore}</Text>
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Text style={{ fontSize: 24 }}>📍</Text>
-            <Text style={{ fontSize: 24 }}>📢</Text>
-            <Text style={{ fontSize: 24 }}>⚙️</Text>
-          </View>
-        </View>
 
         {/* Title */}
         <Text style={styles.title}>SCOREBOARD</Text>
         <Text className="text-white text-center mb-4" style={{fontFamily: 'PressStart2P', fontSize: 10}}>
           Week 35, 5 days left
         </Text>
-
-        {/* Icons Row */}
-        <View style={styles.iconsRow}>
-          <Text style={{ fontSize: 32 }}>🏆</Text>
-          <Text style={{ fontSize: 32 }}>⚡</Text>
-          <Text style={{ fontSize: 32 }}>⛽</Text>
-          <Text style={{ fontSize: 32 }}>✨</Text>
-        </View>
 
         {scoreData.length === 0 ? (
           <View style={[styles.tierCard, { backgroundColor: 'rgba(0,0,0,0.8)' }]}>
@@ -190,7 +159,7 @@ export default function ScoreboardComponent() {
           <Text style={styles.backButtonText}>BACK TO HOME</Text>
         </Pressable>
       </ScrollView>
-    </ImageBackground>
+      </>
   );
 }
 
