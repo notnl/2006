@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/views/ui/button';
 import { useColorScheme } from 'nativewind';
 import { Image, Platform, View } from 'react-native';
 

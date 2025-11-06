@@ -1,7 +1,7 @@
 /*import {  View } from 'react-native';
 import { Link, Stack } from 'expo-router';
-import { Text } from '@/components/ui/text';
-import ProfileComponent  from '@/components/ui/ProfileComponent';
+import { Text } from '@/views/ui/text';
+import ProfileComponent  from '@/views/ui/ProfileComponent';
 
 const SCREEN_OPTIONS = {
   title: 'Menu',
@@ -20,7 +20,7 @@ export default function MapScreen(){
 */
 import { View, ImageBackground, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
-import ProfileComponent from '@/components/ui/ProfileComponent';
+import ProfileComponent from '@/views/ui/ProfileComponent';
 
 const SCREEN_OPTIONS = {
   title: 'Menu',

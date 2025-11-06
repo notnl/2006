@@ -1,16 +1,16 @@
 
-import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
-import { Text } from '@/components/ui/text';
+import { Button } from '@/views/ui/button';
+import { Icon } from '@/views/ui/icon';
+import { Text } from '@/views/ui/text';
 import { Link, Stack } from 'expo-router';
 import { MoonStarIcon, StarIcon, SunIcon } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
 import { Image, type ImageStyle, View } from 'react-native';
 
-import MenuComponent from '@/components/ui/MenuComponent';
+import MenuComponent from '@/views/ui/MenuComponent';
 
-import  SignInForm  from '@/components/sign-in-form';
+import  SignInForm  from '@/views/sign-in-form';
 
 const LOGO = {
   light: require('@/assets/images/react-native-reusables-light.png'),

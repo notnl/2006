@@ -10,7 +10,7 @@ import type { Href } from "expo-router";
 import { useState,useEffect } from 'react';
 import LoadingComponent from './LoadingComponent'
 
-import  SignInForm  from '@/components/sign-in-form';
+import  SignInForm  from '@/views/sign-in-form';
 import {fetchUserProfile} from '../../lib/GetUser';
 
 export default function HomeScreen() {

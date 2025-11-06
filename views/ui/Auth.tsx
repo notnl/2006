@@ -3,7 +3,7 @@ import { Alert, StyleSheet, View, AppState,ScrollView  } from 'react-native'
 import { supabase } from '../../lib/supabase'
 
 
-import { SignInForm } from '@/components/sign-in-form';
+import { SignInForm } from '@/views/sign-in-form';
 
 
 export default function Auth() {

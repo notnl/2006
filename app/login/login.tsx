@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { ImageBackground, StyleSheet } from 'react-native';
-import SignInForm  from '@/components/sign-in-form';
+import SignInForm  from '@/views/sign-in-form';
 
 const SCREEN_OPTIONS = {
   title: '',

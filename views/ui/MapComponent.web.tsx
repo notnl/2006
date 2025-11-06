@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Modal, Pressable, Platform } from 'react-native';
-import { Text } from '@/components/ui/text';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Text } from '@/views/ui/text';
+import { Card, CardContent, CardHeader, CardTitle } from '@/views/ui/card';
 
 import { useRouter } from 'expo-router';
 

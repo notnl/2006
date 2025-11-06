@@ -1,13 +1,13 @@
 import { Stack } from 'expo-router';
 import { ImageBackground, StyleSheet } from 'react-native';
-import { SignUpForm } from '@/components/sign-up-form';
+import  SignUpForm  from '@/views/sign-up-form';
 
 const SCREEN_OPTIONS = {
   title: '',
   headerShown: false,
 };
 
-export default function Screen() {
+export default function RegisterScreen() {
   return (
     <>
       <Stack.Screen options={SCREEN_OPTIONS} />

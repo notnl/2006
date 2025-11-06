@@ -1,7 +1,7 @@
 import {  View } from 'react-native';
 import { Link, Stack } from 'expo-router';
-import { Text } from '@/components/ui/text';
-import RewardsComponent  from '@/components/ui/RewardsComponent';
+import { Text } from '@/views/ui/text';
+import RewardsComponent  from '@/views/ui/RewardsComponent';
 
 const SCREEN_OPTIONS = {
   title: 'Menu',

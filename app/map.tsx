@@ -2,7 +2,7 @@
 
 import { View, ImageBackground, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
-import MapComponent from '@/components/ui/MapComponent';
+import MapComponent from '@/views/ui/MapComponent';
 
 const SCREEN_OPTIONS = {
   title: 'Menu',
