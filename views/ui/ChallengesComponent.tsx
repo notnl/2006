@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from "react-native";
 import { useRouter } from 'expo-router';
-import { useChallengesModel } from '@/app/model/challenge_model';
+import { useChallenges } from '@/app/model/challenge_model';
 
 export default function ChallengesComponent() {
   const router = useRouter();
@@ -12,7 +12,8 @@ export default function ChallengesComponent() {
     timeLeft, 
     loading, 
     handleAnswer 
-  } = useChallengesModel();
+  } = useChallenges(); 
+  //Our logic is all handled at the model , from lec slides : Contains the processing (operations) and the data involved.
 
   if (loading || questions.length === 0) {
     return (
@@ -116,6 +117,7 @@ export default function ChallengesComponent() {
   );
 }
 
+// Keep all your styles the same as before
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
