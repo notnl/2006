@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Alert } from 'react-native';
+import { useUser } from '@/app/context/UserProfileContext'; 
 
 export interface Reward {
   id: number;
@@ -8,48 +9,21 @@ export interface Reward {
   available: boolean;
 }
 
-export interface UserBadges {
-  water: boolean;
-  recycle: boolean;
-  energy: boolean;
-  earth: boolean;
-}
 
 export function useRewards() {
   const [loading, setLoading] = useState(true);
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const [claimedRewards, setClaimedRewards] = useState<number[]>([]);
   const [userScore, setUserScore] = useState<number>(0);
-  const [badges, setBadges] = useState<UserBadges>({
-    water: false,
-    recycle: false,
-    energy: false,
-    earth: false,
-  });
+
+  const { signIn , profile} = useUser(); // Get the signIn function from context
 
   // Load user profile and rewards
   const loadData = async () => {
     setLoading(true);
     try {
 
-      const { data: user, error: userErr } = await supabase
-        .from("userprofile")
-        .select(
-          "green_score, badge_water_saver, badge_recycler, badge_energy_efficient, badge_earth_guardian"
-        )
-        .eq("nric", "S1234567I")
-        .single();
-
-      if (userErr) throw userErr;
-
-      setUserScore(user?.green_score || 0);
-
-      // Set badge values
-      setBadges({
-        water: user?.badge_water_saver || false,
-        recycle: user?.badge_recycler || false,
-        energy: user?.badge_energy_efficient || false,
-        earth: user?.badge_earth_guardian || false,
-      });
+      setUserScore(profile?.green_score || 0);
 
       const { data: rewardsData, error: rewardsErr } = await supabase
         .from("rewards")
@@ -59,6 +33,12 @@ export function useRewards() {
       if (rewardsErr) throw rewardsErr;
 
       setRewards(rewardsData || []);
+
+      setClaimedRewards(
+      rewardsData.map( x => { 
+        return profile?.rewards.includes(x.id) ? x.id : -1
+      }))
+
     } catch (err) {
 
       setLoading(false);
@@ -70,45 +50,59 @@ export function useRewards() {
 
   // Handle reward redemption
   const handleRedeem = async (reward: Reward) => {
+    console.log('handling this reward')
+    console.log(reward)
     try {
-      if (!reward.available) {
-        Alert.alert("Unavailable", "This reward is currently out of stock.");
-        return;
-      }
 
-      if (userScore < 50) {
+      if (userScore < reward.points_required) {
         Alert.alert(
           "Insufficient Points",
-          "You need at least 50 points to redeem this reward."
+          "You need at least "+reward.points_required  + " points to redeem this reward."
         );
         return;
       }
 
-      const newScore = userScore - 50;
+      const newScore = userScore - reward.points_required;
 
+      //console.log("Made it here")
+      if (!profile) {  
+        Alert.alert(
+          "Profile error! Try Restarting the app"
+        );
+        return 
+      }
+
+      profile.rewards.push(reward.id) // Add the reward id to the array
+
+      //console.log("")
       const { error: userErr } = await supabase
         .from("userprofile")
-        .update({ green_score: newScore })
-        .eq("nric", "S1234567I");
+        .update({ green_score: newScore, rewards: profile.rewards })
+        .eq("nric",profile.nric);
 
+      console.log("Set user profile")
       if (userErr) throw userErr;
 
+      /*
       const { error: rewardErr } = await supabase
         .from("rewards")
         .update({ available: false })
         .eq("id", reward.id);
-
-      if (rewardErr) throw rewardErr;
-
+      */
+     
+      ///if (rewardErr) throw rewardErr;
       setUserScore(newScore);
-      setRewards((prev) =>
-        prev.map((r) => (r.id === reward.id ? { ...r, available: false } : r))
-      );
+      setClaimedRewards(profile.rewards)
+      //setRewards((prev) =>
+      //  prev.map((r) => (r.id === reward.id ? { ...r, available: false } : r))
+      //);
 
       Alert.alert("Success!", `You redeemed ${reward.reward_name}.`);
     } catch (err) {
       console.error(err);
       Alert.alert("Error", "Something went wrong while redeeming.");
+    }finally {
+
     }
   };
 
@@ -120,8 +114,8 @@ export function useRewards() {
   return {
     loading,
     rewards,
+    claimedRewards,
     userScore,
-    badges,
     handleRedeem,
     refreshData: loadData,
   };

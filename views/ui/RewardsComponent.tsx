@@ -10,20 +10,18 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRewards } from '@/app/model/reward_model';
-
-import  Loading  from '@/views/ui/LoadingComponent';
-
+import Loading from '@/views/ui/LoadingComponent';
+import { useUser } from '@/app/context/UserProfileContext'; 
 
 export default function RewardsView() {
   const router = useRouter();
-  const { loading, rewards, userScore, badges, handleRedeem } = useRewards();
+  const { loading, rewards, claimedRewards, userScore, handleRedeem } = useRewards();
 
   if (loading) {
-    return (
-        <Loading/>
-    );
+    return <Loading />;
   }
 
+  
   return (
     <ImageBackground
       source={require("@/assets/images/bg-city.png")}
@@ -34,25 +32,6 @@ export default function RewardsView() {
       <Text style={styles.greenScoreText}>Your Green Score: {userScore}</Text>
       <Text style={styles.rewardsHeader}>REWARDS</Text>
 
-      {/* BADGES SECTION */}
-      <View style={styles.badgeContainer}>
-        <Text style={styles.badgeHeader}>BADGES</Text>
-        <View style={styles.badgeRow}>
-          <Text style={[styles.badgeIcon, !badges.water && styles.lockedBadge]}>
-            {badges.water ? "❄️" : "🔒"}
-          </Text>
-          <Text style={[styles.badgeIcon, !badges.recycle && styles.lockedBadge]}>
-            {badges.recycle ? "♻️" : "🔒"}
-          </Text>
-          <Text style={[styles.badgeIcon, !badges.energy && styles.lockedBadge]}>
-            {badges.energy ? "⚡" : "🔒"}
-          </Text>
-          <Text style={[styles.badgeIcon, !badges.earth && styles.lockedBadge]}>
-            {badges.earth ? "🌍" : "🔒"}
-          </Text>
-        </View>
-      </View>
-
       {/* Rewards list */}
       <ScrollView
         style={styles.scrollContainer}
@@ -60,22 +39,40 @@ export default function RewardsView() {
       >
         {rewards.map((reward, index) => (
           <View key={index} style={styles.rewardCard}>
-            <Text style={styles.rewardName}>{reward.reward_name}</Text>
+            <View style={styles.rewardInfo}>
+              <Text style={styles.rewardName}>{reward.reward_name}</Text>
+              <Text style={styles.pointsRequired}>
+                {reward.points_required} points
+              </Text>
+            </View>
 
-            {reward.available ? (
-              <LinearGradient
-                colors={["#ff66cc", "#ff9933"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.redeemGradient}
-              >
-                <Pressable
-                  style={styles.redeemButton}
-                  onPress={() => handleRedeem(reward)}
+            {!claimedRewards.includes(reward.id) ? (
+              <View style={styles.redeemContainer}>
+                <LinearGradient
+                  colors={["#ff66cc", "#ff9933"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.redeemGradient}
                 >
-                  <Text style={styles.redeemButtonText}>REDEEM NOW</Text>
-                </Pressable>
-              </LinearGradient>
+                  <Pressable
+                    style={[
+                      styles.redeemButton,
+                      userScore < reward.points_required && styles.disabledButton
+                    ]}
+                    onPress={() => handleRedeem(reward)}
+                    disabled={userScore < reward.points_required}
+                  >
+                    <Text style={styles.redeemButtonText}>
+                      {userScore >= reward.points_required ? "REDEEM NOW" : "NEED MORE POINTS"}
+                    </Text>
+                  </Pressable>
+                </LinearGradient>
+                {userScore < reward.points_required && (
+                  <Text style={styles.pointsWarning}>
+                    Need {reward.points_required - userScore} more points
+                  </Text>
+                )}
+              </View>
             ) : (
               <Pressable style={styles.redeemedButton}>
                 <Text style={styles.redeemedButtonText}>REDEEMED</Text>
@@ -135,32 +132,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 1,
     marginBottom: 20,
   },
-  badgeContainer: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    width: "80%",
-    alignItems: "center",
-  },
-  badgeHeader: {
-    fontFamily: "PressStart2P",
-    fontSize: 12,
-    color: "#5E35B1",
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  badgeRow: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    width: "100%",
-  },
-  badgeIcon: {
-    fontSize: 32,
-  },
-  lockedBadge: {
-    opacity: 0.4,
-  },
   scrollContainer: {
     backgroundColor: "rgba(180,220,255,0.8)",
     borderRadius: 16,
@@ -188,11 +159,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 3 },
     shadowRadius: 4,
   },
+  rewardInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
   rewardName: {
     fontFamily: "PressStart2P",
     fontSize: 8,
     color: "#1A0033",
-    width: "55%",
+    marginBottom: 4,
+  },
+  pointsRequired: {
+    fontFamily: "PressStart2P",
+    fontSize: 6,
+    color: "#666",
+  },
+  redeemContainer: {
+    alignItems: "center",
   },
   redeemGradient: {
     borderRadius: 4,
@@ -203,11 +186,22 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
+    minWidth: 80,
+  },
+  disabledButton: {
+    backgroundColor: "#cccccc",
   },
   redeemButtonText: {
     fontFamily: "PressStart2P",
     fontSize: 6,
     color: "#3B0A00",
+    textAlign: "center",
+  },
+  pointsWarning: {
+    fontFamily: "PressStart2P",
+    fontSize: 5,
+    color: "#ff3333",
+    marginTop: 4,
     textAlign: "center",
   },
   redeemedButton: {
@@ -217,6 +211,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
+    minWidth: 80,
   },
   redeemedButtonText: {
     fontFamily: "PressStart2P",

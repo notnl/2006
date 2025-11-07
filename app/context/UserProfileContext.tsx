@@ -6,6 +6,7 @@ export interface UserProfile {
   id: string;
   nric: string;
   green_score: number;
+  rewards : string;
   badge_water_saver: boolean;
   badge_recycler: boolean;
   badge_energy_efficient: boolean;
