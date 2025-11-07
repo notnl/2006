@@ -19,8 +19,6 @@ GAS_FILE = os.path.join(BASE_DIR, "data", "Gas_Data.csv")
 MAP_FILE = os.path.join(BASE_DIR, "data/Map_Data.csv")
 
 # Simulated date for testing (YYYY, M)
-YEAR = 2023
-MONTH = 10  # (change this manually to simulate other months)
 
 # ----------------------------
 # HELPER FUNCTION TO LOAD DATA
@@ -87,8 +85,7 @@ def load_map_csv_data(filepath, key_field="Town"):
 # ----------------------------
 # MAIN FUNCTION
 # ----------------------------
-def upload_energy_data():
-    year, month = YEAR, MONTH
+def upload_energy_data(year,month):
     column_name = f"{year}.{month}".strip()
     print(f"📅 Uploading data for: {column_name}")
 
@@ -135,10 +132,19 @@ def upload_energy_data():
 
     print("🎉 Monthly electricity & gas data upload complete!")
 
+def Monthly_Update_Green_Score(year,month):
+    year, month = YEAR, MONTH
+    column_name = f"{year}.{month}".strip()
+    print(f"📅 Uploading data for: {column_name}")
+    pass
+
 # ----------------------------
 # RUN SCRIPT
 # ----------------------------
 if __name__ == "__main__":
-    upload_energy_data()
+    YEAR = 2023
+    MONTH = 10  # (change this manually to simulate other months)
+
+    upload_energy_data(YEAR,MONTH)
 
 

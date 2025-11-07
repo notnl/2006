@@ -2,11 +2,11 @@ import { View, Alert, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text } from '@/views/ui/text';
 import { useUser } from '@/app/context/UserProfileContext'; 
+import { useEffect, useState } from 'react';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, profile } = useUser(); // Get user data from context
-
+  const { user, profile, getTownRanking } = useUser(); // Get user data from context
 
   if (!profile) {
     return (
@@ -34,7 +34,6 @@ export default function ProfileScreen() {
       </View>
     );
   }
-
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
@@ -76,7 +75,7 @@ export default function ProfileScreen() {
             marginBottom: 8,
           }}
         >
-          {profile.nric || 'JOHN SMITH'}
+          {profile.username || 'UNKNOWN'}
         </Text>
 
         {/* Town */}
@@ -86,10 +85,23 @@ export default function ProfileScreen() {
             fontSize: 10,
             color: '#1A237E',
             textAlign: 'center',
-            marginBottom: 24,
+            marginBottom: 8,
           }}
         >
           {profile.town || 'SINGAPORE'}
+        </Text>
+
+        {/* Town Ranking */}
+        <Text
+          style={{
+            fontFamily: 'PressStart2P',
+            fontSize: 8,
+            color: '#4A148C',
+            textAlign: 'center',
+            marginBottom: 24,
+          }}
+        >
+          TOWN RANK: #{profile.town_ranking || 'N/A'}
         </Text>
 
         {/* Green Score */}

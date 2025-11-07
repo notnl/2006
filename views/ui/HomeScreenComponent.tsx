@@ -19,6 +19,8 @@ export default function HomeScreen() { //There is no need to spilt to model,sinc
 
   const greenScore = profile?.green_score ?? 0; // We use ? here, initially i used let , which adds unnecessary complexity 
   const residency = profile?.town ?? 'Unknown';  // So can be null
+  const userName = profile?.username ?? 'User' ; // We use ? here, initially i used let , which adds unnecessary complexity 
+  const townRanking = profile?.town_ranking ?? -1 ; // We use ? here, initially i used let , which adds unnecessary complexity 
     
     
   const routes: { label: string; path: Href }[] = [
@@ -42,12 +44,15 @@ return (
           GREEN{"\n"}QUEST
         </Text>
 
+
         <Text style={home_styles.welcomeText}>
-          Welcome,{"\n"} {residency} Resident!
+          Welcome {userName}!,{"\n"} {residency} Resident             
+
         </Text>
         
         <Text style={home_styles.scoreText}>
           Your Green Score: {greenScore}
+
         </Text>
 
         {routes.map(({ label, path }) => (

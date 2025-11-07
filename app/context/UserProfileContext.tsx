@@ -6,12 +6,11 @@ export interface UserProfile {
   id: string;
   nric: string;
   green_score: number;
-  rewards : string;
-  badge_water_saver: boolean;
-  badge_recycler: boolean;
-  badge_energy_efficient: boolean;
-  badge_earth_guardian: boolean;
+  username: string;
+  town: string;
+  rewards: string;
   quiz_answers?: { [key: number]: string | null };
+  town_ranking: number;
 }
 
 interface UserContextType {
@@ -36,7 +35,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          setUser(session.user);
+          setUser(session.user); 
           await loadUserProfile(session.user.id);
         }
       } catch (error) {
@@ -47,20 +46,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkCurrentUser();
-    
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        await loadUserProfile(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-      setLoading(false);
-    });
 
-    return () => subscription.unsubscribe();
+    //const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    //  console.log('Auth state changed:', event, session?.user?.id);
+    //  
+    //  if (session?.user) {
+    //    setUser(session.user);
+    //    await loadUserProfile(session.user.id);
+    //  } else {
+    //    setUser(null);
+    //    setProfile(null);
+    //  }
+    //  setLoading(false);
+    //});
+
+    //return () => subscription.unsubscribe();
   }, []);
 
   const loadUserProfile = async (userId: string) => {
@@ -72,7 +72,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      //console.log('Profile loaded:', data);
+
+      const curTownRanking = await getTownRanking();
+      setProfile({...data, town_ranking: curTownRanking});
     } catch (error) {
       console.error('Error loading user profile:', error);
     }
@@ -80,6 +83,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (nric: string, password: string): Promise<boolean> => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email: `${nric}@nric.user`,
         password: password,
@@ -99,23 +103,61 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Sign in error:', error);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+      }
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
       console.error('Sign out error:', error);
+    } finally {
+      setLoading(false);
     }
-    setUser(null);
-    setProfile(null);
   };
 
   const refreshProfile = async () => {
     if (user) {
+      //console.log('Refreshing profile for user:', user.id);
       await loadUserProfile(user.id);
     }
   };
+  
+  async function getTownRanking() {
+    try { 
+      if (!profile) {
+            return -1
+      }
+      const { data, error } = await supabase
+        .from('scoreboard')
+        .select('*')
+        .limit(100);
+    
+        if (error) {
+            return -1
+        }
+
+      const filter_null_data = (data || []).filter(item => 
+        item != null && item.gas != null && item.electricity != null
+      );
+      filter_null_data.sort((a, b) => b.green_score - a.green_score);
+
+      //console.log('updated town ranking: ')
+      return filter_null_data.findIndex(x => { return x.town_name ==  profile.town} ) + 1 
+
+    }catch(e){
+        console.error(e)
+    }
+
+  }
 
   const value: UserContextType = {
     user,
@@ -134,9 +176,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useUser() {
+
   const context = useContext(UserContext);
   if (context === undefined) {
     throw new Error('useUser must be used within a UserProvider');
   }
+
+  useEffect(() => {
+    // Only refresh if we have a user and not already loading
+    if (context.user && !context.loading) {
+      context.refreshProfile();
+    }
+  }, []);
   return context;
 }

@@ -2,8 +2,7 @@ import React from "react";
 import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from "react-native";
 import { useRouter } from 'expo-router';
 import { useChallenges } from '@/app/model/challenge_model';
-
-import  Loading  from '@/views/ui/LoadingComponent';
+import Loading from '@/views/ui/LoadingComponent';
 
 export default function ChallengesComponent() {
   const router = useRouter();
@@ -14,36 +13,39 @@ export default function ChallengesComponent() {
     timeLeft, 
     loading, 
     handleAnswer 
-  } = useChallenges(); 
-  //Our logic is all handled at the model , from lec slides : Contains the processing (operations) and the data involved.
+  } = useChallenges();
 
   if (loading) {
-    return (
-        <Loading/>
-    );
+    return <Loading />;
   }
 
   return (
-    <>
-      {/* Header */}
-      <Text style={styles.header}>
-        QUIZ
-      </Text>
-
-      {/* User Score */}
-      <Text style={styles.scoreText}>
-        Your Score: {greenScore}
-      </Text>
-
-      {/* Time Left */}
-      <Text style={styles.timeText}>
-        ⏰ {timeLeft}
-      </Text>
+    <View style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.headerSection}>
+        <Text style={styles.header}>
+          QUIZ CHALLENGE
+        </Text>
+        
+        {/* Stats Row */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>SCORE</Text>
+            <Text style={styles.statValue}>{greenScore}</Text>
+          </View>
+          
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>TIME LEFT</Text>
+            <Text style={styles.timeValue}>⏰ {timeLeft}</Text>
+          </View>
+        </View>
+      </View>
 
       {/* Scrollable Quiz List */}
       <ScrollView
         style={styles.quizContainer}
         contentContainerStyle={styles.quizContent}
+        showsVerticalScrollIndicator={false}
       >
         {questions.map((q, idx) => {
           const selectedLetter = selectedAnswers[q.id];
@@ -60,47 +62,81 @@ export default function ChallengesComponent() {
           
           return (
             <View key={q.id} style={styles.questionCard}>
-              <Text style={styles.questionNumber}>
-                Question {idx + 1}
-              </Text>
+              {/* Question Header */}
+              <View style={styles.questionHeader}>
+                <Text style={styles.questionNumber}>
+                  QUESTION {idx + 1}
+                </Text>
+                <View style={styles.pointsBadge}>
+                  <Text style={styles.pointsText}>+{q.points} pts</Text>
+                </View>
+              </View>
 
+              {/* Question Text */}
               <Text style={styles.questionText}>
                 {q.question_desc}
               </Text>
 
-              {[q.optionA, q.optionB, q.optionC].map((option: string, i: number) => {
-                const isSelected = selected === option;
-                const isCorrect = isSelected && option === q.answer;
-                const isWrong = isSelected && option !== q.answer;
+              {/* Options */}
+              <View style={styles.optionsContainer}>
+                {[
+                  { letter: "A", option: q.optionA },
+                  { letter: "B", option: q.optionB },
+                  { letter: "C", option: q.optionC }
+                ].map(({ letter, option }, i) => {
+                  const isSelected = selected === option;
+                  const isCorrect = isSelected && option === q.answer;
+                  const isWrong = isSelected && option !== q.answer;
+                  const showCorrect = selected && option === q.answer && !isSelected;
 
-                const bgColor =
-                  isCorrect
-                    ? "#4CAF50" // ✅ green for correct
-                    : isWrong
-                    ? "#FF6B6B" // ❌ red for wrong
-                    : !isCorrect && selected && option === q.answer
-                    ? "#6bdcffff" // light blue for actual answer
-                    : !selected
-                    ? "#FFFFFF" // ⬜ normal if not answered yet
-                    : "#FFFFFF";
+                  const bgColor =
+                    isCorrect
+                      ? "#4CAF50" // ✅ green for correct
+                      : isWrong
+                      ? "#FF6B6B" // ❌ red for wrong
+                      : showCorrect
+                      ? "#6bdcff" // light blue for actual answer when another is wrong
+                      : "#FFFFFF"; // ⬜ normal if not answered yet
 
-                return (
-                  <Pressable
-                    key={i}
-                    onPress={() => handleAnswer(q.id, option, q.answer, q.points)}
-                    style={[styles.optionButton, { backgroundColor: bgColor }]}
-                  >
-                    <Text style={styles.optionText}>
-                      {option}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                  const borderColor =
+                    isCorrect
+                      ? "#2E7D32"
+                      : isWrong
+                      ? "#C62828"
+                      : showCorrect
+                      ? "#0288D1"
+                      : "#FF9800";
+
+                  return (
+                    <Pressable
+                      key={i}
+                      onPress={() => handleAnswer(q.id, option, q.answer, q.points)}
+                      style={[
+                        styles.optionButton,
+                        { 
+                          backgroundColor: bgColor,
+                          borderColor: borderColor 
+                        }
+                      ]}
+                    >
+                      <View style={styles.optionContent}>
+                        <View style={styles.optionLetter}>
+                          <Text style={styles.optionLetterText}>{letter}</Text>
+                        </View>
+                        <Text style={styles.optionText}>
+                          {option}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
           );
         })}
       </ScrollView>
       
+      {/* Back Button */}
       <Pressable
         onPress={() => router.push('/menu')}
         style={styles.backButton}
@@ -109,112 +145,169 @@ export default function ChallengesComponent() {
           BACK TO HOME
         </Text>
       </Pressable>
-      </>
+    </View>
   );
 }
 
-// Keep all your styles the same as before
 const styles = StyleSheet.create({
-  backgroundImage: {
+  container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
+    backgroundColor: '#1A237E',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+  },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
   header: {
     fontFamily: "PressStart2P",
-    fontSize: 16,
-    color: "#FF69B4",
-    textShadowColor: "#800080",
+    fontSize: 20,
+    color: "#FFA726",
+    textShadowColor: "#FF0044",
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1,
-    marginTop: 40,
-    marginBottom: 20,
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  scoreText: {
-    fontFamily: "PressStart2P",
-    fontSize: 10,
-    color: "#ffffffff",
-    marginBottom: 10,
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 300,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#FFA726',
   },
-  timeText: {
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statLabel: {
     fontFamily: "PressStart2P",
     fontSize: 8,
+    color: "#FFFFFF",
+    marginBottom: 4,
+  },
+  statValue: {
+    fontFamily: "PressStart2P",
+    fontSize: 16,
+    color: "#4CAF50",
+  },
+  timeValue: {
+    fontFamily: "PressStart2P",
+    fontSize: 12,
     color: "#FFD700",
-    marginBottom: 15,
-    textAlign: "center",
   },
   quizContainer: {
-    backgroundColor: "rgba(255,220,120,0.8)",
-    borderRadius: 20,
-    width: "90%",
-    paddingVertical: 10,
+    flex: 1,
     marginBottom: 20,
   },
   quizContent: {
-    alignItems: "center",
+    paddingBottom: 20,
   },
   questionCard: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    marginVertical: 10,
-    width: "90%",
-    alignItems: "center",
-    borderColor: "#ff9933",
-    borderWidth: 3,
-    shadowColor: "#cc33ff",
-    shadowOpacity: 0.8,
-    shadowOffset: { width: 2, height: 3 },
-    shadowRadius: 4,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 4,
+    borderColor: "#FF9800",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   questionNumber: {
     fontFamily: "PressStart2P",
+    fontSize: 10,
+    color: "#3B0A00",
+  },
+  pointsBadge: {
+    backgroundColor: '#FFA726',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#FF4081',
+  },
+  pointsText: {
+    fontFamily: "PressStart2P",
     fontSize: 8,
     color: "#3B0A00",
-    marginBottom: 6,
-    textAlign: "center",
   },
   questionText: {
     fontFamily: "PressStart2P",
-    fontSize: 7,
+    fontSize: 10,
     color: "#3B0A00",
-    marginBottom: 12,
-    textAlign: "center",
-    lineHeight: 10,
+    marginBottom: 16,
+    textAlign: 'center',
+    lineHeight: 14,
+    flexWrap: 'wrap',
+  },
+  optionsContainer: {
+    width: '100%',
   },
   optionButton: {
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    width: "100%",
-    borderWidth: 2,
-    borderColor: "#ff9933",
-    marginVertical: 5,
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 6,
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  optionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  optionLetter: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1A237E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  optionLetterText: {
+    fontFamily: "PressStart2P",
+    fontSize: 8,
+    color: "#FFFFFF",
   },
   optionText: {
     fontFamily: "PressStart2P",
-    fontSize: 7,
+    fontSize: 9,
     color: "#3B0A00",
-    textAlign: "center",
+    flex: 1,
+    flexWrap: 'wrap',
+    lineHeight: 12,
   },
   backButton: {
     backgroundColor: '#FFA726',
     borderColor: '#FF4081',
     borderWidth: 4,
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 40,
-    borderRadius: 8,
-    marginTop: 10,
+    borderRadius: 12,
     marginBottom: 30,
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 0,
     alignSelf: 'center',
+    minWidth: 200,
   },
   backButtonText: {
     fontFamily: 'PressStart2P',

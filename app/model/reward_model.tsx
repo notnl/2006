@@ -33,11 +33,12 @@ export function useRewards() {
       if (rewardsErr) throw rewardsErr;
 
       setRewards(rewardsData || []);
-
-      setClaimedRewards(
-      rewardsData.map( x => { 
-        return profile?.rewards.includes(x.id) ? x.id : -1
-      }))
+      if (profile != null) {
+        setClaimedRewards(
+        rewardsData.map( x => { 
+          return profile?.rewards.includes(x.id) ? x.id : -1
+        }))
+      }
 
     } catch (err) {
 
@@ -50,8 +51,8 @@ export function useRewards() {
 
   // Handle reward redemption
   const handleRedeem = async (reward: Reward) => {
-    console.log('handling this reward')
-    console.log(reward)
+    //console.log('handling this reward')
+    //console.log(reward)
     try {
 
       if (userScore < reward.points_required) {

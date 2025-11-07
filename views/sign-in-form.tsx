@@ -8,6 +8,7 @@ import { useState, useRef } from 'react';
 import { useUser } from '@/app/context/UserProfileContext'; 
 
 import {background_style}  from '@/app/styles/background_style'; 
+import  withTimeout  from '@/lib/timeout'; 
 
 export default function SignInForm() {
   const router = useRouter();
@@ -24,7 +25,17 @@ export default function SignInForm() {
   }
 
   async function onSubmit() {
-    await signInWithNric();
+    try {
+    
+        await withTimeout(signInWithNric(),
+          5000  //5 second timeout
+        );
+    }catch (error) {
+        console.error('Error with  signing in :', error);
+      } finally {
+        setLoading(false); // GUARANTEED to allow another user to login again 
+      }
+
   }
 
   async function signInWithNric() {
@@ -121,7 +132,7 @@ return (
           style={[form_style.continueButton, loading && form_style.continueButtonDisabled]}
         >
           <Text style={form_style.continueButtonText}>
-            {loading ? 'Signing in...' : 'Continue'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </Text>
         </Pressable>
 
