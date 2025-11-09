@@ -1,44 +1,74 @@
-import { View, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { View, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text } from '@/views/ui/text';
-import { useUser } from '@/app/context/UserProfileContext'; 
+import { useUser } from '@/app/context/UserProfileContext';
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, profile, getTownRanking } = useUser(); // Get user data from context
+  const { user, profile } = useUser(); // user and profile context
+  const [badges, setBadges] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!profile) {
+  // Fetch badges linked to this user's NRIC
+  useEffect(() => {
+    if (profile?.nric) {
+      console.log('✅ User NRIC from profile:', profile.nric);
+      fetchUserBadges(profile.nric);
+    }
+  }, [profile]);
+
+  async function fetchUserBadges(nric) {
+    console.log('🔍 Fetching badges for NRIC:', nric);
+    console.log('🧾 Type of NRIC:', typeof nric, 'Value:', nric);
+    console.log('🔗 Using Supabase URL:', supabase.supabaseUrl);
+    console.log('🗝️ Using Supabase Key:', supabase.supabaseKey ? 'EXISTS ✅' : 'MISSING ❌');
+
+
+    console.log('📡 Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
+    console.log('🔑 Supabase Key exists:', !!process.env.EXPO_PUBLIC_SUPABASE_KEY);
+
+    const { data, error } = await supabase
+      .from('badges')
+      .select('*')
+      .ilike('nric', nric);
+
+    if (error) {
+      console.error('❌ Error fetching badges:', error);
+    } else {
+      console.log('🏅 Badges fetched:', data);
+      setBadges(data);
+    }
+
+    setLoading(false);
+  }
+
+  // Helper to check if user has a specific badge
+  const hasBadge = (keyword) =>
+    badges.some((b) => b.badge_name?.toLowerCase().includes(keyword.toLowerCase()));
+
+  // Loading spinner
+  if (!profile || loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-        <View
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            padding: 32,
-            borderRadius: 16,
-            borderWidth: 3,
-            borderColor: '#00FFAA',
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 12,
-              color: 'white',
-              textAlign: 'center',
-              fontFamily: 'PressStart2P',
-            }}
-          >
-            No profile found.{'\n'}Please sign in.
-          </Text>
-        </View>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
+        <ActivityIndicator size="large" color="#7E57C2" />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-
-      {/* PROFILE Title */}
+    <View
+      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}
+    >
+      {/* === PROFILE Title === */}
       <Text
         style={{
           fontFamily: 'PressStart2P',
@@ -53,7 +83,7 @@ export default function ProfileScreen() {
         PROFILE
       </Text>
 
-      {/* Main Card */}
+      {/* === PROFILE Card === */}
       <View
         style={{
           backgroundColor: '#B39DDB',
@@ -65,7 +95,7 @@ export default function ProfileScreen() {
           borderColor: '#7E57C2',
         }}
       >
-        {/* NRIC */}
+        {/* Username / NRIC */}
         <Text
           style={{
             fontFamily: 'PressStart2P',
@@ -91,7 +121,7 @@ export default function ProfileScreen() {
           {profile.town || 'SINGAPORE'}
         </Text>
 
-        {/* Town Ranking */}
+        {/* Town Rank */}
         <Text
           style={{
             fontFamily: 'PressStart2P',
@@ -160,35 +190,35 @@ export default function ProfileScreen() {
             {/* Water Saver */}
             <View style={styles.badgeIcon}>
               <Text style={{ fontSize: 40 }}>
-                {profile.badge_water_saver ? '❄️' : '🔒'}
+                {hasBadge('water') ? '💧' : '🔒'}
               </Text>
             </View>
 
             {/* Recycler */}
             <View style={styles.badgeIcon}>
               <Text style={{ fontSize: 40 }}>
-                {profile.badge_recycler ? '♻️' : '🔒'}
+                {hasBadge('recycle') ? '♻️' : '🔒'}
               </Text>
             </View>
 
             {/* Energy Efficient */}
             <View style={styles.badgeIcon}>
               <Text style={{ fontSize: 40 }}>
-                {profile.badge_energy_efficient ? '⚡' : '🔒'}
+                {hasBadge('energy') ? '⚡' : '🔒'}
               </Text>
             </View>
 
             {/* Earth Guardian */}
             <View style={styles.badgeIcon}>
               <Text style={{ fontSize: 40 }}>
-                {profile.badge_earth_guardian ? '🌍' : '🔒'}
+                {hasBadge('earth') ? '🌍' : '🔒'}
               </Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Back Button */}
+      {/* === Back Button === */}
       <Pressable
         onPress={() => router.push('/menu')}
         style={{
