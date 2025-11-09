@@ -16,7 +16,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ELECTRICITY_FILE = os.path.join(BASE_DIR, "data", "Electricity_Data.csv")
 GAS_FILE = os.path.join(BASE_DIR, "data", "Gas_Data.csv")
-MAP_FILE = os.path.join(BASE_DIR, "data/Map_Data.csv")
+#MAP_FILE = os.path.join(BASE_DIR, "data/Map_Data.csv") #
 
 # Simulated date for testing (YYYY, M)
 
@@ -92,10 +92,10 @@ def upload_energy_data(year,month):
     # Load data from both files
     electricity_data = load_csv_data(ELECTRICITY_FILE, column_name)
     gas_data = load_csv_data(GAS_FILE, column_name)
-    map_data = load_map_csv_data(MAP_FILE)
+    #map_data = load_map_csv_data(MAP_FILE)
     #print(
     # Merge based on town name
-    all_towns = set(electricity_data.keys()) | set(gas_data.keys()) | set(map_data.keys())
+    all_towns = set(electricity_data.keys()) | set(gas_data.keys()) 
     print(f"🏙 Found total {len(all_towns)} towns to update")
 
     # Update Supabase table
@@ -112,9 +112,10 @@ def upload_energy_data(year,month):
         green_score = round((elec_score + gas_score)/2, 1)
         update_payload["green_score"] = green_score
 
-        if town in map_data:
-            update_payload["vertices"] =  (map_data[town])
-            #print(map_data[town])
+            
+        #if town in map_data: 
+        #    update_payload["vertices"] =  (map_data[town])
+        #    #print(map_data[town])
 
         if not update_payload:
             continue

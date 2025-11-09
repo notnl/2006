@@ -14,20 +14,20 @@ export default function ProfileScreen() {
   // Fetch badges linked to this user's NRIC
   useEffect(() => {
     if (profile?.nric) {
-      console.log('✅ User NRIC from profile:', profile.nric);
+      console.log('User NRIC from profile:', profile.nric);
       fetchUserBadges(profile.nric);
     }
   }, [profile]);
 
   async function fetchUserBadges(nric) {
-    console.log('🔍 Fetching badges for NRIC:', nric);
-    console.log('🧾 Type of NRIC:', typeof nric, 'Value:', nric);
-    console.log('🔗 Using Supabase URL:', supabase.supabaseUrl);
-    console.log('🗝️ Using Supabase Key:', supabase.supabaseKey ? 'EXISTS ✅' : 'MISSING ❌');
+    //console.log(' Fetching badges for NRIC:', nric);
+    //console.log(' Type of NRIC:', typeof nric, 'Value:', nric);
+    //console.log(' Using Supabase URL:', supabase.supabaseUrl);
+    //console.log(' Using Supabase Key:', supabase.supabaseKey ? 'EXISTS ' : 'MISSING ');
 
 
-    console.log('📡 Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
-    console.log('🔑 Supabase Key exists:', !!process.env.EXPO_PUBLIC_SUPABASE_KEY);
+    //console.log(' Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
+    //console.log(' Supabase Key exists:', !!process.env.EXPO_PUBLIC_SUPABASE_KEY);
 
     const { data, error } = await supabase
       .from('badges')
@@ -35,9 +35,9 @@ export default function ProfileScreen() {
       .ilike('nric', nric);
 
     if (error) {
-      console.error('❌ Error fetching badges:', error);
+      console.error(' Error fetching badges:', error);
     } else {
-      console.log('🏅 Badges fetched:', data);
+      console.log(' Badges fetched:', data);
       setBadges(data);
     }
 
