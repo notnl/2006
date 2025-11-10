@@ -149,10 +149,9 @@ export default function SignUpForm() {
           water_consumption: 0.0,
           electricity_usage: 0.0,
           recycling_rate: 0.0,
-          green_score: 500, //Give user 500 green score at the start
+          green_score: 0, //Give user 0 green score at the start
           resident_contribution: 0.0,
           ranking: 0,
-          badges: [],
           rewards: [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),

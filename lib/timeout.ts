@@ -1,3 +1,4 @@
+// This is taken from stack overflow
 const withTimeout = (promise, millis) => {
   let timeoutPid;
   const timeout = new Promise(
@@ -10,5 +11,6 @@ const withTimeout = (promise, millis) => {
     }
   });
 };
+
 
 export default withTimeout;

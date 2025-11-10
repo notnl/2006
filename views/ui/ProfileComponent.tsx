@@ -42,7 +42,7 @@ export default function ProfileScreen() {
 
   // Helper to check if user has a specific badge
   const hasBadge = (keyword) =>
-    badges.some((b) => b.badge_name?.toLowerCase().includes(keyword.toLowerCase()));
+    badges.some((b) => b.id == keyword);
 
   // Loading spinner
   if (!profile || loading) {
@@ -172,22 +172,22 @@ export default function ProfileScreen() {
             }}>
             {/* Water Saver */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>{hasBadge('water') ? '💧' : '🔒'}</Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge(1) ? '💧' : '🔒'}</Text>
             </View>
 
             {/* Recycler */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>{hasBadge('recycle') ? '♻️' : '🔒'}</Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge(2) ? '♻️' : '🔒'}</Text>
             </View>
 
             {/* Energy Efficient */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>{hasBadge('energy') ? '⚡' : '🔒'}</Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge(3) ? '⚡' : '🔒'}</Text>
             </View>
 
             {/* Earth Guardian */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>{hasBadge('earth') ? '🌍' : '🔒'}</Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge(4) ? '🌍' : '🔒'}</Text>
             </View>
           </View>
         </View>
