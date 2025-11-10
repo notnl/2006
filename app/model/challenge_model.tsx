@@ -13,13 +13,12 @@ export interface ChallengeQuestion {
   points: number;
 }
 
-
 export function useChallenges() {
   const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string | null }>({});
   const [user, setUser] = useState<any>(null);
   const [greenScore, setGreenScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState<string>("");
+  const [timeLeft, setTimeLeft] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   // Timer logic
@@ -29,7 +28,7 @@ export function useChallenges() {
       const nextSunday = new Date();
 
       const day = now.getDay();
-      const daysUntilSunday = (7 - day) % 7; 
+      const daysUntilSunday = (7 - day) % 7;
       nextSunday.setDate(now.getDate() + daysUntilSunday);
       nextSunday.setHours(23, 59, 0, 0);
 
@@ -41,7 +40,9 @@ export function useChallenges() {
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
 
-      setTimeLeft(`${diffDays} day${diffDays !== 1 ? "s" : ""} ${diffHours} hour${diffHours !== 1 ? "s" : ""} left`);
+      setTimeLeft(
+        `${diffDays} day${diffDays !== 1 ? 's' : ''} ${diffHours} hour${diffHours !== 1 ? 's' : ''} left`
+      );
     }
 
     updateCountdown();
@@ -55,8 +56,8 @@ export function useChallenges() {
       setLoading(true);
       try {
         // Run both operations with timeout protection
-          await loadQuestions()
-          await loadUserProfile()
+        await loadQuestions();
+        await loadUserProfile();
       } catch (error) {
         console.error('Error initializing challenges:', error);
         // Don't show alert here as individual functions handle their own errors
@@ -71,15 +72,15 @@ export function useChallenges() {
   const loadQuestions = async () => {
     try {
       const { data, error } = await withTimeout(
-        supabase.from("challenges").select("*").limit(5),
+        supabase.from('challenges').select('*').limit(5),
         5000 // 10 second timeout
       );
-      
+
       if (error) {
         console.error('Error loading questions:', error);
         return;
       }
-      
+
       if (data) {
         setQuestions(data as ChallengeQuestion[]);
       }
@@ -88,45 +89,44 @@ export function useChallenges() {
       if (error.message.includes('timed out')) {
         Alert.alert('Timeout', 'Failed to load questions. Please check your connection.');
       }
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
 
   const loadUserProfile = async () => {
     try {
-      const { data: { user }, error: authError } = await withTimeout(
+      const {
+        data: { user },
+        error: authError,
+      } = await withTimeout(
         supabase.auth.getUser(),
         5000 // 10 second timeout
       );
 
       if (authError || !user) {
         console.error('Auth error or no user:', authError);
-        throw new Error('No user on the session!') 
+        throw new Error('No user on the session!');
       }
-      
+
       setUser(user);
 
       const { data: profile, error: profileError } = await withTimeout(
-        supabase
-          .from("userprofile")
-          .select("green_score, quiz_answers")
-          .eq("id", user.id)
-          .single(),
+        supabase.from('userprofile').select('green_score, quiz_answers').eq('id', user.id).single(),
         5000 // 10 second timeout
       );
 
       if (profileError) {
         console.error('Error loading profile:', profileError);
 
-        throw new Error('Profile not loaded') 
+        throw new Error('Profile not loaded');
         return;
       }
 
       if (profile?.green_score != null) {
         setGreenScore(profile.green_score);
       }
-      
+
       if (profile?.quiz_answers) {
         setSelectedAnswers(profile.quiz_answers);
       }
@@ -136,22 +136,30 @@ export function useChallenges() {
         Alert.alert('Timeout', 'Failed to load user profile. Please check your connection.');
       }
       // Don't throw - let the function complete
-    }finally{
-
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleAnswer = async (qid: number, option: string, correctAnswer: string, points: number) => {
+  const handleAnswer = async (
+    qid: number,
+    option: string,
+    correctAnswer: string,
+    points: number
+  ) => {
     if (selectedAnswers[qid]) return;
 
-    const question = questions.find(q => q.id === qid);
+    const question = questions.find((q) => q.id === qid);
     if (!question) return;
 
-    const optionLetter = 
-      option === question.optionA ? "A" :
-      option === question.optionB ? "B" :
-      option === question.optionC ? "C" : "";
+    const optionLetter =
+      option === question.optionA
+        ? 'A'
+        : option === question.optionB
+          ? 'B'
+          : option === question.optionC
+            ? 'C'
+            : '';
 
     const isCorrect = option === correctAnswer;
     const newSelected = { ...selectedAnswers, [qid]: optionLetter };
@@ -170,10 +178,7 @@ export function useChallenges() {
         }
 
         await withTimeout(
-          supabase
-            .from("userprofile")
-            .update(updateData)
-            .eq("id", user.id),
+          supabase.from('userprofile').update(updateData).eq('id', user.id),
           5000 // 10 second timeout for update
         );
       } catch (error) {

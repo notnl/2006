@@ -1,5 +1,3 @@
-
-
 import { View, ImageBackground, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import MapComponent from '@/views/ui/MapComponent';
@@ -16,8 +14,7 @@ export default function MapScreen() {
       <ImageBackground
         source={require('../assets/images/bg-city.png')}
         resizeMode="cover"
-        style={styles.backgroundImage}
-      >
+        style={styles.backgroundImage}>
         <MapComponent />
       </ImageBackground>
     </>

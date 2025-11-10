@@ -25,14 +25,10 @@ export default function ProfileScreen() {
     //console.log(' Using Supabase URL:', supabase.supabaseUrl);
     //console.log(' Using Supabase Key:', supabase.supabaseKey ? 'EXISTS ' : 'MISSING ');
 
-
     //console.log(' Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
     //console.log(' Supabase Key exists:', !!process.env.EXPO_PUBLIC_SUPABASE_KEY);
 
-    const { data, error } = await supabase
-      .from('badges')
-      .select('*')
-      .ilike('nric', nric);
+    const { data, error } = await supabase.from('badges').select('*').ilike('nric', nric);
 
     if (error) {
       console.error(' Error fetching badges:', error);
@@ -57,17 +53,14 @@ export default function ProfileScreen() {
           justifyContent: 'center',
           alignItems: 'center',
           padding: 24,
-        }}
-      >
+        }}>
         <ActivityIndicator size="large" color="#7E57C2" />
       </View>
     );
   }
 
   return (
-    <View
-      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}
-    >
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
       {/* === PROFILE Title === */}
       <Text
         style={{
@@ -78,8 +71,7 @@ export default function ProfileScreen() {
           textShadowOffset: { width: 2, height: 2 },
           textShadowRadius: 1,
           marginBottom: 20,
-        }}
-      >
+        }}>
         PROFILE
       </Text>
 
@@ -93,8 +85,7 @@ export default function ProfileScreen() {
           maxWidth: 400,
           borderWidth: 4,
           borderColor: '#7E57C2',
-        }}
-      >
+        }}>
         {/* Username / NRIC */}
         <Text
           style={{
@@ -103,8 +94,7 @@ export default function ProfileScreen() {
             color: '#000',
             textAlign: 'center',
             marginBottom: 8,
-          }}
-        >
+          }}>
           {profile.username || 'UNKNOWN'}
         </Text>
 
@@ -116,8 +106,7 @@ export default function ProfileScreen() {
             color: '#1A237E',
             textAlign: 'center',
             marginBottom: 8,
-          }}
-        >
+          }}>
           {profile.town || 'SINGAPORE'}
         </Text>
 
@@ -129,8 +118,7 @@ export default function ProfileScreen() {
             color: '#4A148C',
             textAlign: 'center',
             marginBottom: 24,
-          }}
-        >
+          }}>
           TOWN RANK: #{profile.town_ranking || 'N/A'}
         </Text>
 
@@ -142,8 +130,7 @@ export default function ProfileScreen() {
             color: '#1A237E',
             textAlign: 'center',
             marginBottom: 8,
-          }}
-        >
+          }}>
           GREEN SCORE:
         </Text>
 
@@ -154,8 +141,7 @@ export default function ProfileScreen() {
             color: '#1A237E',
             textAlign: 'center',
             marginBottom: 24,
-          }}
-        >
+          }}>
           {profile.green_score || 0}
         </Text>
 
@@ -165,8 +151,7 @@ export default function ProfileScreen() {
             backgroundColor: 'white',
             borderRadius: 16,
             padding: 20,
-          }}
-        >
+          }}>
           <Text
             style={{
               fontFamily: 'PressStart2P',
@@ -174,8 +159,7 @@ export default function ProfileScreen() {
               color: '#5E35B1',
               textAlign: 'center',
               marginBottom: 16,
-            }}
-          >
+            }}>
             BADGES
           </Text>
 
@@ -185,34 +169,25 @@ export default function ProfileScreen() {
               flexWrap: 'wrap',
               justifyContent: 'center',
               gap: 16,
-            }}
-          >
+            }}>
             {/* Water Saver */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>
-                {hasBadge('water') ? '💧' : '🔒'}
-              </Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge('water') ? '💧' : '🔒'}</Text>
             </View>
 
             {/* Recycler */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>
-                {hasBadge('recycle') ? '♻️' : '🔒'}
-              </Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge('recycle') ? '♻️' : '🔒'}</Text>
             </View>
 
             {/* Energy Efficient */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>
-                {hasBadge('energy') ? '⚡' : '🔒'}
-              </Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge('energy') ? '⚡' : '🔒'}</Text>
             </View>
 
             {/* Earth Guardian */}
             <View style={styles.badgeIcon}>
-              <Text style={{ fontSize: 40 }}>
-                {hasBadge('earth') ? '🌍' : '🔒'}
-              </Text>
+              <Text style={{ fontSize: 40 }}>{hasBadge('earth') ? '🌍' : '🔒'}</Text>
             </View>
           </View>
         </View>
@@ -233,16 +208,14 @@ export default function ProfileScreen() {
           shadowOffset: { width: 4, height: 4 },
           shadowOpacity: 1,
           shadowRadius: 0,
-        }}
-      >
+        }}>
         <Text
           style={{
             fontFamily: 'PressStart2P',
             fontSize: 10,
             color: '#3B0A00',
             textAlign: 'center',
-          }}
-        >
+          }}>
           BACK TO HOME
         </Text>
       </Pressable>

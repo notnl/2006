@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { View } from 'react-native'; 
+import { View } from 'react-native';
 import { supabase } from '@/lib/supabase';
 
 export interface UserProfile {
@@ -33,9 +33,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkCurrentUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (session?.user) {
-          setUser(session.user); 
+          setUser(session.user);
           await loadUserProfile(session.user.id);
         }
       } catch (error) {
@@ -49,7 +51,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     //const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
     //  console.log('Auth state changed:', event, session?.user?.id);
-    //  
+    //
     //  if (session?.user) {
     //    setUser(session.user);
     //    await loadUserProfile(session.user.id);
@@ -75,7 +77,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       //console.log('Profile loaded:', data);
 
       const curTownRanking = await getTownRanking();
-      setProfile({...data, town_ranking: curTownRanking});
+      setProfile({ ...data, town_ranking: curTownRanking });
     } catch (error) {
       console.error('Error loading user profile:', error);
     }
@@ -130,33 +132,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       await loadUserProfile(user.id);
     }
   };
-  
-  async function getTownRanking() {
-    try { 
-      if (!profile) {
-            return -1
-      }
-      const { data, error } = await supabase
-        .from('scoreboard')
-        .select('*')
-        .limit(100);
-    
-        if (error) {
-            return -1
-        }
 
-      const filter_null_data = (data || []).filter(item => 
-        item != null && item.gas != null && item.electricity != null
+  async function getTownRanking() {
+    try {
+      if (!profile) {
+        return -1;
+      }
+      const { data, error } = await supabase.from('scoreboard').select('*').limit(100);
+
+      if (error) {
+        return -1;
+      }
+
+      const filter_null_data = (data || []).filter(
+        (item) => item != null && item.gas != null && item.electricity != null
       );
       filter_null_data.sort((a, b) => b.green_score - a.green_score);
 
       //console.log('updated town ranking: ')
-      return filter_null_data.findIndex(x => { return x.town_name ==  profile.town} ) + 1 
-
-    }catch(e){
-        console.error(e)
+      return (
+        filter_null_data.findIndex((x) => {
+          return x.town_name == profile.town;
+        }) + 1
+      );
+    } catch (e) {
+      console.error(e);
     }
-
   }
 
   const value: UserContextType = {
@@ -168,15 +169,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     refreshProfile,
   };
 
-  return (
-    <UserContext.Provider value={value}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {
-
   const context = useContext(UserContext);
   if (context === undefined) {
     throw new Error('useUser must be used within a UserProvider');

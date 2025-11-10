@@ -1,17 +1,10 @@
-import React from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  ImageBackground,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
+import React from 'react';
+import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRewards } from '@/app/model/reward_model';
 import Loading from '@/views/ui/LoadingComponent';
-import { useUser } from '@/app/context/UserProfileContext'; 
+import { useUser } from '@/app/context/UserProfileContext';
 
 export default function RewardsView() {
   const router = useRouter();
@@ -21,49 +14,40 @@ export default function RewardsView() {
     return <Loading />;
   }
 
-  
   return (
     <ImageBackground
-      source={require("@/assets/images/bg-city.png")}
+      source={require('@/assets/images/bg-city.png')}
       resizeMode="cover"
-      style={styles.backgroundImage}
-    >
+      style={styles.backgroundImage}>
       {/* Header */}
       <Text style={styles.greenScoreText}>Your Green Score: {userScore}</Text>
       <Text style={styles.rewardsHeader}>REWARDS</Text>
 
       {/* Rewards list */}
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
         {rewards.map((reward, index) => (
           <View key={index} style={styles.rewardCard}>
             <View style={styles.rewardInfo}>
               <Text style={styles.rewardName}>{reward.reward_name}</Text>
-              <Text style={styles.pointsRequired}>
-                {reward.points_required} points
-              </Text>
+              <Text style={styles.pointsRequired}>{reward.points_required} points</Text>
             </View>
 
             {!claimedRewards.includes(reward.id) ? (
               <View style={styles.redeemContainer}>
                 <LinearGradient
-                  colors={["#ff66cc", "#ff9933"]}
+                  colors={['#ff66cc', '#ff9933']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  style={styles.redeemGradient}
-                >
+                  style={styles.redeemGradient}>
                   <Pressable
                     style={[
                       styles.redeemButton,
-                      userScore < reward.points_required && styles.disabledButton
+                      userScore < reward.points_required && styles.disabledButton,
                     ]}
                     onPress={() => handleRedeem(reward)}
-                    disabled={userScore < reward.points_required}
-                  >
+                    disabled={userScore < reward.points_required}>
                     <Text style={styles.redeemButtonText}>
-                      {userScore >= reward.points_required ? "REDEEM NOW" : "NEED MORE POINTS"}
+                      {userScore >= reward.points_required ? 'REDEEM NOW' : 'NEED MORE POINTS'}
                     </Text>
                   </Pressable>
                 </LinearGradient>
@@ -84,15 +68,11 @@ export default function RewardsView() {
 
       {/* Back button */}
       <LinearGradient
-        colors={["#ff66cc", "#ff9933"]}
+        colors={['#ff66cc', '#ff9933']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.backGradient}
-      >
-        <Pressable
-          onPress={() => router.push("/menu")}
-          style={styles.backButton}
-        >
+        style={styles.backGradient}>
+        <Pressable onPress={() => router.push('/menu')} style={styles.backButton}>
           <Text style={styles.backButtonText}>BACK TO HOME</Text>
         </Pressable>
       </LinearGradient>
@@ -103,58 +83,58 @@ export default function RewardsView() {
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
-    width: "100%",
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 20,
   },
   loadingText: {
     marginTop: 16,
-    color: "white",
-    fontFamily: "PressStart2P",
+    color: 'white',
+    fontFamily: 'PressStart2P',
     fontSize: 8,
   },
   greenScoreText: {
-    fontFamily: "PressStart2P",
-    color: "white",
+    fontFamily: 'PressStart2P',
+    color: 'white',
     fontSize: 8,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 40,
     marginBottom: 10,
   },
   rewardsHeader: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 16,
-    color: "#FF69B4",
-    textShadowColor: "#800080",
+    color: '#FF69B4',
+    textShadowColor: '#800080',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1,
     marginBottom: 20,
   },
   scrollContainer: {
-    backgroundColor: "rgba(180,220,255,0.8)",
+    backgroundColor: 'rgba(180,220,255,0.8)',
     borderRadius: 16,
-    width: "90%",
+    width: '90%',
     paddingVertical: 10,
     marginBottom: 20,
   },
   scrollContent: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   rewardCard: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginVertical: 8,
-    width: "90%",
-    borderColor: "#ff66cc",
+    width: '90%',
+    borderColor: '#ff66cc',
     borderWidth: 2,
-    shadowColor: "#cc33ff",
+    shadowColor: '#cc33ff',
     shadowOpacity: 0.8,
     shadowOffset: { width: 2, height: 3 },
     shadowRadius: 4,
@@ -164,78 +144,78 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   rewardName: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 8,
-    color: "#1A0033",
+    color: '#1A0033',
     marginBottom: 4,
   },
   pointsRequired: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 6,
-    color: "#666",
+    color: '#666',
   },
   redeemContainer: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   redeemGradient: {
     borderRadius: 4,
     padding: 2,
   },
   redeemButton: {
-    backgroundColor: "#ffcc66",
+    backgroundColor: '#ffcc66',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
     minWidth: 80,
   },
   disabledButton: {
-    backgroundColor: "#cccccc",
+    backgroundColor: '#cccccc',
   },
   redeemButtonText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 6,
-    color: "#3B0A00",
-    textAlign: "center",
+    color: '#3B0A00',
+    textAlign: 'center',
   },
   pointsWarning: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 5,
-    color: "#ff3333",
+    color: '#ff3333',
     marginTop: 4,
-    textAlign: "center",
+    textAlign: 'center',
   },
   redeemedButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     borderWidth: 2,
-    borderColor: "#2E7D32",
+    borderColor: '#2E7D32',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
     minWidth: 80,
   },
   redeemedButtonText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 6,
-    color: "white",
+    color: 'white',
   },
   backGradient: {
     borderRadius: 6,
     padding: 2,
-    shadowColor: "#cc33ff",
+    shadowColor: '#cc33ff',
     shadowOpacity: 1,
     shadowRadius: 8,
     shadowOffset: { width: 3, height: 3 },
   },
   backButton: {
-    backgroundColor: "#FFA726",
+    backgroundColor: '#FFA726',
     borderRadius: 6,
     paddingVertical: 10,
     paddingHorizontal: 30,
   },
   backButtonText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 8,
-    color: "#3B0A00",
-    textAlign: "center",
+    color: '#3B0A00',
+    textAlign: 'center',
   },
 });

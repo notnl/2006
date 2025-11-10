@@ -4,14 +4,23 @@ import { Text } from '@/views/ui/text';
 
 import { form_style } from '@/app/styles/form_style';
 
-import { Pressable, type TextInput, View, Alert, StyleSheet, Modal, TouchableOpacity, FlatList } from 'react-native';
+import {
+  Pressable,
+  type TextInput,
+  View,
+  Alert,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useState, useRef } from 'react';
 import { TOWNS } from '@/lib/town.ts';
 
-import {register_form_style}  from '@/app/styles/form_style'; 
+import { register_form_style } from '@/app/styles/form_style';
 
-import withTimeout from '@/lib/timeout'; 
+import withTimeout from '@/lib/timeout';
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -46,10 +55,7 @@ export default function SignUpForm() {
 
   async function onSubmit() {
     try {
-      await withTimeout(
-        signUpWithNric(),
-        15000
-      );
+      await withTimeout(signUpWithNric(), 15000);
     } catch (error) {
       console.error('Error with signing up:', error);
     } finally {
@@ -58,7 +64,7 @@ export default function SignUpForm() {
   }
 
   async function signUpWithNric() {
-    console.log("Signing up ")
+    console.log('Signing up ');
     if (!nric || !username || !password || !selectedTown) {
       Alert.alert('Error', 'Please enter NRIC, username, password and select a town');
       return;
@@ -85,7 +91,7 @@ export default function SignUpForm() {
     try {
       const email = `${nric.toLowerCase()}@nric.user`;
 
-      console.log("Signing up supabase ")
+      console.log('Signing up supabase ');
       const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password,
@@ -102,12 +108,12 @@ export default function SignUpForm() {
       if (error) {
         Alert.alert('Registration Failed', error.message);
         throw error;
-      } 
+      }
 
-      console.log('This is the data user : ', data.user)
+      console.log('This is the data user : ', data.user);
       if (data.user) {
         await createUserProfile(data.user.id, nric.toUpperCase(), username, selectedTown);
-        
+
         Alert.alert(
           'Registration Successful',
           'Your account has been created successfully! Please sign in with your account.',
@@ -166,10 +172,7 @@ export default function SignUpForm() {
   }
 
   const renderTownItem = ({ item }: { item: string }) => (
-    <TouchableOpacity
-      style={register_form_style.townItem}
-      onPress={() => selectTown(item)}
-    >
+    <TouchableOpacity style={register_form_style.townItem} onPress={() => selectTown(item)}>
       <Text style={register_form_style.townText}>{item}</Text>
     </TouchableOpacity>
   );
@@ -222,9 +225,13 @@ export default function SignUpForm() {
           <TouchableOpacity
             style={[form_style.input, register_form_style.townSelector]}
             onPress={() => setShowTownDropdown(true)}
-            disabled={loading}
-          >
-            <Text style={selectedTown ? register_form_style.townSelectedText : register_form_style.townPlaceholderText}>
+            disabled={loading}>
+            <Text
+              style={
+                selectedTown
+                  ? register_form_style.townSelectedText
+                  : register_form_style.townPlaceholderText
+              }>
               {selectedTown || 'Select your town'}
             </Text>
           </TouchableOpacity>
@@ -251,8 +258,10 @@ export default function SignUpForm() {
         <Pressable
           onPress={onSubmit}
           disabled={loading}
-          style={[form_style.continueButton, loading && register_form_style.continueButtonDisabled]}
-        >
+          style={[
+            form_style.continueButton,
+            loading && register_form_style.continueButtonDisabled,
+          ]}>
           <Text style={form_style.continueButtonText}>
             {loading ? 'Registering...' : 'Sign up'}
           </Text>
@@ -264,8 +273,7 @@ export default function SignUpForm() {
         visible={showTownDropdown}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowTownDropdown(false)}
-      >
+        onRequestClose={() => setShowTownDropdown(false)}>
         <View style={register_form_style.modalOverlay}>
           <View style={register_form_style.modalContent}>
             <Text style={register_form_style.modalTitle}>Select Your Town</Text>
@@ -278,8 +286,7 @@ export default function SignUpForm() {
             />
             <TouchableOpacity
               style={register_form_style.closeButton}
-              onPress={() => setShowTownDropdown(false)}
-            >
+              onPress={() => setShowTownDropdown(false)}>
               <Text style={register_form_style.closeButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -287,13 +294,9 @@ export default function SignUpForm() {
       </Modal>
 
       {/* Back to Home Button */}
-      <Pressable
-        onPress={() => router.back()}
-        style={form_style.backButton}
-      >
+      <Pressable onPress={() => router.back()} style={form_style.backButton}>
         <Text style={form_style.backButtonText}>BACK TO LOGIN</Text>
       </Pressable>
     </View>
   );
 }
-

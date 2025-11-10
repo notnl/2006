@@ -40,5 +40,5 @@ export const TOWNS = [
   'Clementi',
   'Jurong West',
   'Pioneer',
-  'Tengah'
+  'Tengah',
 ];

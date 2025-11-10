@@ -63,7 +63,6 @@
     letter-spacing: 0.5px;
   }
 
-
   button {
     border: 3px solid #c35c00;
     background-color: #ffa726;
@@ -73,6 +72,8 @@
   }
 }
 
-html, body, * {
+html,
+body,
+* {
   font-family: 'PressStart2P', monospace !important;
 }

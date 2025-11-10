@@ -1,4 +1,3 @@
-
 import { StyleSheet } from 'react-native';
 const background_style = StyleSheet.create({
   backgroundImage: {
@@ -9,8 +8,8 @@ const background_style = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center', // Vertical centering
-    alignItems: 'center',     // Horizontal centering
+    alignItems: 'center', // Horizontal centering
   },
-})
+});
 
-export {background_style}
+export { background_style };

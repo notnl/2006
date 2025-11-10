@@ -32,17 +32,14 @@ export default function MapComponent() {
 
   async function fetchTown() {
     try {
-      const { data, error } = await supabase
-        .from('scoreboard')
-        .select('*')
-        .limit(100);
+      const { data, error } = await supabase.from('scoreboard').select('*').limit(100);
 
       if (error) {
         console.error('Fetch error:', error);
         return;
       }
 
-      const filtered_data = data?.filter(item => item != null) || [];
+      const filtered_data = data?.filter((item) => item != null) || [];
       setTownData(filtered_data as TownItem[]);
     } catch (error) {
       console.error('Error fetching scoreboard:', error);
@@ -51,7 +48,7 @@ export default function MapComponent() {
 
   useEffect(() => {
     fetchTown();
-    
+
     // Load native map components
     if (Platform.OS !== 'web') {
       const { default: MapView, Marker, Polygon } = require('react-native-maps');
@@ -64,49 +61,49 @@ export default function MapComponent() {
   // Function to generate polygon coordinates from vertices
   const generateTownPolygons = (townsData: TownItem[]) => {
     const polygons: Record<number, { latitude: number; longitude: number }[]> = {};
-    
-    townsData.forEach(town => {
+
+    townsData.forEach((town) => {
       let polygonArr: { latitude: number; longitude: number }[] = [];
-      
+
       if (town != null && town.vertices != null) {
         for (let step = 0; step < town.vertices.length / 2; step++) {
           polygonArr.push({
             latitude: town.vertices[step * 2],
-            longitude: town.vertices[(step * 2) + 1]
+            longitude: town.vertices[step * 2 + 1],
           });
         }
         polygons[town.id] = polygonArr;
       }
     });
-    
+
     return polygons;
   };
 
   // Generate colors for all towns
   const generateColors = () => {
     const colors = [
-      'rgba(255, 99, 132, 0.4)',    // Red
-      'rgba(54, 162, 235, 0.4)',    // Blue
-      'rgba(255, 206, 86, 0.4)',    // Yellow
-      'rgba(75, 192, 192, 0.4)',    // Teal
-      'rgba(153, 102, 255, 0.4)',   // Purple
-      'rgba(255, 159, 64, 0.4)',    // Orange
-      'rgba(199, 199, 199, 0.4)',   // Gray
-      'rgba(83, 102, 255, 0.4)',    // Indigo
-      'rgba(40, 159, 64, 0.4)',     // Green
-      'rgba(210, 114, 225, 0.4)',   // Pink
-      'rgba(102, 159, 255, 0.4)',   // Light Blue
-      'rgba(255, 102, 159, 0.4)',   // Light Red
-      'rgba(159, 255, 102, 0.4)',   // Light Green
-      'rgba(255, 203, 102, 0.4)',   // Light Orange
-      'rgba(102, 255, 203, 0.4)',   // Mint
-      'rgba(203, 102, 255, 0.4)',   // Lavender
-      'rgba(255, 102, 203, 0.4)',   // Hot Pink
-      'rgba(102, 203, 255, 0.4)',   // Sky Blue
-      'rgba(203, 255, 102, 0.4)',   // Lime
-      'rgba(255, 153, 102, 0.4)',   // Coral
+      'rgba(255, 99, 132, 0.4)', // Red
+      'rgba(54, 162, 235, 0.4)', // Blue
+      'rgba(255, 206, 86, 0.4)', // Yellow
+      'rgba(75, 192, 192, 0.4)', // Teal
+      'rgba(153, 102, 255, 0.4)', // Purple
+      'rgba(255, 159, 64, 0.4)', // Orange
+      'rgba(199, 199, 199, 0.4)', // Gray
+      'rgba(83, 102, 255, 0.4)', // Indigo
+      'rgba(40, 159, 64, 0.4)', // Green
+      'rgba(210, 114, 225, 0.4)', // Pink
+      'rgba(102, 159, 255, 0.4)', // Light Blue
+      'rgba(255, 102, 159, 0.4)', // Light Red
+      'rgba(159, 255, 102, 0.4)', // Light Green
+      'rgba(255, 203, 102, 0.4)', // Light Orange
+      'rgba(102, 255, 203, 0.4)', // Mint
+      'rgba(203, 102, 255, 0.4)', // Lavender
+      'rgba(255, 102, 203, 0.4)', // Hot Pink
+      'rgba(102, 203, 255, 0.4)', // Sky Blue
+      'rgba(203, 255, 102, 0.4)', // Lime
+      'rgba(255, 153, 102, 0.4)', // Coral
     ];
-    
+
     const polygonColors: Record<number, string> = {};
     townData.forEach((town, index) => {
       polygonColors[town.id] = colors[index % colors.length];
@@ -159,14 +156,14 @@ export default function MapComponent() {
             position: 'absolute',
             top: 50,
             alignSelf: 'center',
-          }}
-        >
-          <Text style={{
-            fontFamily: 'PressStart2P',
-            fontSize: 10,
-            color: '#3B0A00',
-            textAlign: 'center',
           }}>
+          <Text
+            style={{
+              fontFamily: 'PressStart2P',
+              fontSize: 10,
+              color: '#3B0A00',
+              textAlign: 'center',
+            }}>
             BACK TO HOME
           </Text>
         </Pressable>
@@ -178,12 +175,11 @@ export default function MapComponent() {
             longitude: 103.8198,
             latitudeDelta: 0.25,
             longitudeDelta: 0.25,
-          }}
-        >
+          }}>
           {townData.map((town) => {
             const vertices = townPolygons[town.id];
             if (!vertices || vertices.length === 0) return null;
-            
+
             return (
               <Polygon
                 key={town.id}
@@ -202,8 +198,7 @@ export default function MapComponent() {
           visible={!!selected}
           animationType="slide"
           transparent={true}
-          onRequestClose={handlePopupClose}
-        >
+          onRequestClose={handlePopupClose}>
           <View style={styles.modalBackdrop}>
             <View style={styles.modalCardWrapper}>
               <Card>
@@ -254,7 +249,7 @@ export default function MapComponent() {
   // Web app fallback
   return (
     <View style={styles.container}>
-      <Text className="text-lg font-bold mb-4">Map not supported on this platform</Text>
+      <Text className="mb-4 text-lg font-bold">Map not supported on this platform</Text>
       <Pressable
         onPress={() => router.push('/menu')}
         style={{
@@ -265,14 +260,14 @@ export default function MapComponent() {
           paddingHorizontal: 40,
           borderRadius: 8,
           marginTop: 32,
-        }}
-      >
-        <Text style={{
-          fontFamily: 'PressStart2P',
-          fontSize: 10,
-          color: '#3B0A00',
-          textAlign: 'center',
         }}>
+        <Text
+          style={{
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+            color: '#3B0A00',
+            textAlign: 'center',
+          }}>
           BACK TO HOME
         </Text>
       </Pressable>

@@ -18,18 +18,16 @@ export default function ScoreboardComponent() {
   const { profile } = useUser();
 
   // Find current town data from scoreData
-  const currentTownData = scoreData.find(item => 
-    item.town_name === profile?.town
-  );
+  const currentTownData = scoreData.find((item) => item.town_name === profile?.town);
 
   // Get current town's rank
-  const currentTownRank = currentTownData 
-    ? scoreData.findIndex(item => item.town_name === profile?.town) + 1
+  const currentTownRank = currentTownData
+    ? scoreData.findIndex((item) => item.town_name === profile?.town) + 1
     : null;
 
   // Get rank badge color and icon
   const getRankStyle = (rank: number) => {
-    switch(rank) {
+    switch (rank) {
       case 1:
         return { color: '#FFD700', icon: '🥇' }; // Gold
       case 2:
@@ -48,11 +46,9 @@ export default function ScoreboardComponent() {
   return (
     <View style={styles.container}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.scrollContent}>
-        
         {/* Title */}
         <Text style={styles.title}>SCOREBOARD</Text>
-        <Text style={styles.subtitle}>
-        </Text>
+        <Text style={styles.subtitle}></Text>
 
         {/* Floating Current Town Panel */}
         {profile?.town && currentTownData && (
@@ -61,7 +57,11 @@ export default function ScoreboardComponent() {
             <View style={styles.floatingPanelContent}>
               <View style={styles.townInfo}>
                 <Text style={styles.townName}>{profile.town}</Text>
-                <View style={[styles.rankBadge, { backgroundColor: getRankStyle(currentTownRank!).color }]}>
+                <View
+                  style={[
+                    styles.rankBadge,
+                    { backgroundColor: getRankStyle(currentTownRank!).color },
+                  ]}>
                   <Text style={styles.rankBadgeText}>#{currentTownRank}</Text>
                 </View>
               </View>
@@ -84,7 +84,7 @@ export default function ScoreboardComponent() {
         ) : (
           <View style={styles.leaderboardCard}>
             <Text style={styles.leaderboardTitle}>GLOBAL RANKINGS</Text>
-            
+
             {/* Header Row */}
             <View style={styles.headerRow}>
               <Text style={styles.headerRank}>RANK</Text>
@@ -97,16 +97,15 @@ export default function ScoreboardComponent() {
               const rank = index + 1;
               const rankStyle = getRankStyle(rank);
               const isCurrentTown = item.town_name === profile?.town;
-              
+
               return (
-                <View 
-                  key={index} 
+                <View
+                  key={index}
                   style={[
                     styles.leaderboardRow,
                     isCurrentTown && styles.currentTownRow,
-                    index === 0 && styles.firstPlaceRow
-                  ]}
-                >
+                    index === 0 && styles.firstPlaceRow,
+                  ]}>
                   {/* Rank Number */}
                   <View style={styles.rankSection}>
                     <View style={[styles.rankContainer, { backgroundColor: rankStyle.color }]}>
@@ -118,7 +117,6 @@ export default function ScoreboardComponent() {
                   {/* Town Name */}
                   <View style={styles.townSection}>
                     <Text style={styles.townNameLeaderboard}>
-                            
                       {' ' + item.town_name}
                       {isCurrentTown && <Text style={styles.youText}> (YOU)</Text>}
                     </Text>

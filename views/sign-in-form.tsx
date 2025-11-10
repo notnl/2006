@@ -1,14 +1,14 @@
-import { ImageBackground} from 'react-native';
+import { ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input } from '@/views/ui/input';
 import { Text } from '@/views/ui/text';
 import { form_style } from '@/app/styles/form_style';
-import { Pressable, type TextInput, View, Alert} from 'react-native';
+import { Pressable, type TextInput, View, Alert } from 'react-native';
 import { useState, useRef } from 'react';
-import { useUser } from '@/app/context/UserProfileContext'; 
+import { useUser } from '@/app/context/UserProfileContext';
 
-import {background_style}  from '@/app/styles/background_style'; 
-import  withTimeout  from '@/lib/timeout'; 
+import { background_style } from '@/app/styles/background_style';
+import withTimeout from '@/lib/timeout';
 
 export default function SignInForm() {
   const router = useRouter();
@@ -26,16 +26,15 @@ export default function SignInForm() {
 
   async function onSubmit() {
     try {
-    
-        await withTimeout(signInWithNric(),
-          5000  //5 second timeout
-        );
-    }catch (error) {
-        console.error('Error with  signing in :', error);
-      } finally {
-        setLoading(false); // GUARANTEED to allow another user to login again 
-      }
-
+      await withTimeout(
+        signInWithNric(),
+        5000 //5 second timeout
+      );
+    } catch (error) {
+      console.error('Error with  signing in :', error);
+    } finally {
+      setLoading(false); // GUARANTEED to allow another user to login again
+    }
   }
 
   async function signInWithNric() {
@@ -77,9 +76,7 @@ export default function SignInForm() {
     Alert.alert('Password Reset', 'Please contact administrator to reset your password');
   }
 
-
-return (
-
+  return (
     <View style={form_style.container}>
       <View style={form_style.card}>
         {/* Title */}
@@ -129,11 +126,8 @@ return (
         <Pressable
           onPress={onSubmit}
           disabled={loading}
-          style={[form_style.continueButton, loading && form_style.continueButtonDisabled]}
-        >
-          <Text style={form_style.continueButtonText}>
-            {loading ? 'Signing in...' : 'Sign in'}
-          </Text>
+          style={[form_style.continueButton, loading && form_style.continueButtonDisabled]}>
+          <Text style={form_style.continueButtonText}>{loading ? 'Signing in...' : 'Sign in'}</Text>
         </Pressable>
 
         {/* Sign Up Section */}
@@ -143,5 +137,5 @@ return (
         </Pressable>
       </View>
     </View>
-);
+  );
 }

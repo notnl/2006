@@ -5,7 +5,14 @@ import { Link, Stack } from 'expo-router';
 import { MoonStarIcon, StarIcon, SunIcon } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
-import { Image, ImageBackground, type ImageStyle, View, StyleSheet, Dimensions } from 'react-native';
+import {
+  Image,
+  ImageBackground,
+  type ImageStyle,
+  View,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 
 import HomeScreenComponent from '@/views/ui/HomeScreenComponent';
 
@@ -20,7 +27,6 @@ const SCREEN_OPTIONS = {
   headerRight: () => <ThemeToggle />,
 };
 
-
 const IMAGE_STYLE: ImageStyle = {
   height: 76,
   width: 76,
@@ -31,9 +37,8 @@ export default function Screen() {
 
   return (
     <>
-
       <Stack.Screen options={SCREEN_OPTIONS} />
-          <HomeScreenComponent/>
+      <HomeScreenComponent />
     </>
   );
 }

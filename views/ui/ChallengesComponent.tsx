@@ -1,19 +1,13 @@
-import React from "react";
-import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from "react-native";
+import React from 'react';
+import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useChallenges } from '@/app/model/challenge_model';
 import Loading from '@/views/ui/LoadingComponent';
 
 export default function ChallengesComponent() {
   const router = useRouter();
-  const { 
-    questions, 
-    selectedAnswers, 
-    greenScore, 
-    timeLeft, 
-    loading, 
-    handleAnswer 
-  } = useChallenges();
+  const { questions, selectedAnswers, greenScore, timeLeft, loading, handleAnswer } =
+    useChallenges();
 
   if (loading) {
     return <Loading />;
@@ -23,17 +17,15 @@ export default function ChallengesComponent() {
     <View style={styles.container}>
       {/* Header Section */}
       <View style={styles.headerSection}>
-        <Text style={styles.header}>
-          QUIZ CHALLENGE
-        </Text>
-        
+        <Text style={styles.header}>QUIZ CHALLENGE</Text>
+
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>SCORE</Text>
             <Text style={styles.statValue}>{greenScore}</Text>
           </View>
-          
+
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>TIME LEFT</Text>
             <Text style={styles.timeValue}>⏰ {timeLeft}</Text>
@@ -45,67 +37,60 @@ export default function ChallengesComponent() {
       <ScrollView
         style={styles.quizContainer}
         contentContainerStyle={styles.quizContent}
-        showsVerticalScrollIndicator={false}
-      >
+        showsVerticalScrollIndicator={false}>
         {questions.map((q, idx) => {
           const selectedLetter = selectedAnswers[q.id];
           const selectedOption =
-            selectedLetter === "A"
+            selectedLetter === 'A'
               ? q.optionA
-              : selectedLetter === "B"
-              ? q.optionB
-              : selectedLetter === "C"
-              ? q.optionC
-              : null;
+              : selectedLetter === 'B'
+                ? q.optionB
+                : selectedLetter === 'C'
+                  ? q.optionC
+                  : null;
 
           const selected = selectedOption;
-          
+
           return (
             <View key={q.id} style={styles.questionCard}>
               {/* Question Header */}
               <View style={styles.questionHeader}>
-                <Text style={styles.questionNumber}>
-                  QUESTION {idx + 1}
-                </Text>
+                <Text style={styles.questionNumber}>QUESTION {idx + 1}</Text>
                 <View style={styles.pointsBadge}>
                   <Text style={styles.pointsText}>+{q.points} pts</Text>
                 </View>
               </View>
 
               {/* Question Text */}
-              <Text style={styles.questionText}>
-                {q.question_desc}
-              </Text>
+              <Text style={styles.questionText}>{q.question_desc}</Text>
 
               {/* Options */}
               <View style={styles.optionsContainer}>
                 {[
-                  { letter: "A", option: q.optionA },
-                  { letter: "B", option: q.optionB },
-                  { letter: "C", option: q.optionC }
+                  { letter: 'A', option: q.optionA },
+                  { letter: 'B', option: q.optionB },
+                  { letter: 'C', option: q.optionC },
                 ].map(({ letter, option }, i) => {
                   const isSelected = selected === option;
                   const isCorrect = isSelected && option === q.answer;
                   const isWrong = isSelected && option !== q.answer;
                   const showCorrect = selected && option === q.answer && !isSelected;
 
-                  const bgColor =
-                    isCorrect
-                      ? "#4CAF50" // ✅ green for correct
-                      : isWrong
-                      ? "#FF6B6B" // ❌ red for wrong
+                  const bgColor = isCorrect
+                    ? '#4CAF50' // ✅ green for correct
+                    : isWrong
+                      ? '#FF6B6B' // ❌ red for wrong
                       : showCorrect
-                      ? "#6bdcff" // light blue for actual answer when another is wrong
-                      : "#FFFFFF"; // ⬜ normal if not answered yet
+                        ? '#6bdcff' // light blue for actual answer when another is wrong
+                        : '#FFFFFF'; // ⬜ normal if not answered yet
 
-                  const borderColor =
-                    isCorrect
-                      ? "#2E7D32"
-                      : isWrong
-                      ? "#C62828"
+                  const borderColor = isCorrect
+                    ? '#2E7D32'
+                    : isWrong
+                      ? '#C62828'
                       : showCorrect
-                      ? "#0288D1"
-                      : "#FF9800";
+                        ? '#0288D1'
+                        : '#FF9800';
 
                   return (
                     <Pressable
@@ -113,19 +98,16 @@ export default function ChallengesComponent() {
                       onPress={() => handleAnswer(q.id, option, q.answer, q.points)}
                       style={[
                         styles.optionButton,
-                        { 
+                        {
                           backgroundColor: bgColor,
-                          borderColor: borderColor 
-                        }
-                      ]}
-                    >
+                          borderColor: borderColor,
+                        },
+                      ]}>
                       <View style={styles.optionContent}>
                         <View style={styles.optionLetter}>
                           <Text style={styles.optionLetterText}>{letter}</Text>
                         </View>
-                        <Text style={styles.optionText}>
-                          {option}
-                        </Text>
+                        <Text style={styles.optionText}>{option}</Text>
                       </View>
                     </Pressable>
                   );
@@ -135,15 +117,10 @@ export default function ChallengesComponent() {
           );
         })}
       </ScrollView>
-      
+
       {/* Back Button */}
-      <Pressable
-        onPress={() => router.push('/menu')}
-        style={styles.backButton}
-      >
-        <Text style={styles.backButtonText}>
-          BACK TO HOME
-        </Text>
+      <Pressable onPress={() => router.push('/menu')} style={styles.backButton}>
+        <Text style={styles.backButtonText}>BACK TO HOME</Text>
       </Pressable>
     </View>
   );
@@ -161,10 +138,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   header: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 20,
-    color: "#FFA726",
-    textShadowColor: "#FF0044",
+    color: '#FFA726',
+    textShadowColor: '#FF0044',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1,
     marginBottom: 16,
@@ -186,20 +163,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statLabel: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 8,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   statValue: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 16,
-    color: "#4CAF50",
+    color: '#4CAF50',
   },
   timeValue: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 12,
-    color: "#FFD700",
+    color: '#FFD700',
   },
   quizContainer: {
     flex: 1,
@@ -209,13 +186,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   questionCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 4,
-    borderColor: "#FF9800",
-    shadowColor: "#000",
+    borderColor: '#FF9800',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -228,9 +205,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   questionNumber: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 10,
-    color: "#3B0A00",
+    color: '#3B0A00',
   },
   pointsBadge: {
     backgroundColor: '#FFA726',
@@ -241,14 +218,14 @@ const styles = StyleSheet.create({
     borderColor: '#FF4081',
   },
   pointsText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 8,
-    color: "#3B0A00",
+    color: '#3B0A00',
   },
   questionText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 10,
-    color: "#3B0A00",
+    color: '#3B0A00',
     marginBottom: 16,
     textAlign: 'center',
     lineHeight: 14,
@@ -282,14 +259,14 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   optionLetterText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 8,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
   },
   optionText: {
-    fontFamily: "PressStart2P",
+    fontFamily: 'PressStart2P',
     fontSize: 9,
-    color: "#3B0A00",
+    color: '#3B0A00',
     flex: 1,
     flexWrap: 'wrap',
     lineHeight: 12,

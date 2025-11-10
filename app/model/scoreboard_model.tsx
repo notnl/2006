@@ -22,26 +22,23 @@ export function useScoreboardModel() {
   const loadScoreboard = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('scoreboard')
-        .select('*')
-        .limit(100);
+      const { data, error } = await supabase.from('scoreboard').select('*').limit(100);
 
       if (error) {
         console.error('Fetch error:', error);
         return;
       }
 
-      const filtered_data = (data || []).filter(item => 
-        item != null && item.gas != null && item.electricity != null
+      const filtered_data = (data || []).filter(
+        (item) => item != null && item.gas != null && item.electricity != null
       );
 
       // Calculate Green score
-      filtered_data.forEach(currentData => {
+      filtered_data.forEach((currentData) => {
         const electricity = currentData.electricity ?? 0;
         const gas = currentData.gas ?? 0;
-        const elec_score = 100 / (1 + (electricity / 410))**1.3;
-        const gas_score = 100 / (1 + (gas / 70))**1.0;
+        const elec_score = 100 / (1 + electricity / 410) ** 1.3;
+        const gas_score = 100 / (1 + gas / 70) ** 1.0;
         currentData.green_score = Number(((elec_score + gas_score) / 2).toFixed(1));
       });
 
@@ -58,10 +55,10 @@ export function useScoreboardModel() {
   const handleScoreboardInsert = (payload: any) => {
     if (!payload.payload?.record) return;
     const newRecord = payload.payload.record as ScoreboardItem;
-    
-    setScoreData(prev => {
-      const filteredPrev = prev.filter(item => 
-        item != null && item.gas != null && item.electricity != null
+
+    setScoreData((prev) => {
+      const filteredPrev = prev.filter(
+        (item) => item != null && item.gas != null && item.electricity != null
       );
 
       const newData = [newRecord, ...filteredPrev];
@@ -72,38 +69,36 @@ export function useScoreboardModel() {
   const handleScoreboardUpdate = (payload: any) => {
     if (!payload.payload?.record) return;
     const updatedRecord = payload.payload.record as ScoreboardItem;
-    
-    setScoreData(prev => {
-      const filteredPrev = prev.filter(item => 
-        item != null && item.gas != null && item.electricity != null
+
+    setScoreData((prev) => {
+      const filteredPrev = prev.filter(
+        (item) => item != null && item.gas != null && item.electricity != null
       );
 
-      const updatedData = filteredPrev.map(item => 
+      const updatedData = filteredPrev.map((item) =>
         item.id === updatedRecord.id ? updatedRecord : item
       );
 
       // Recalculate green scores for updated data
-      updatedData.forEach(currentData => {
+      updatedData.forEach((currentData) => {
         const electricity = currentData.electricity ?? 0;
         const gas = currentData.gas ?? 0;
-        const elec_score = 100 / (1 + (electricity / 410))**1.3;
-        const gas_score = 100 / (1 + (gas / 70))**1.0;
+        const elec_score = 100 / (1 + electricity / 410) ** 1.3;
+        const gas_score = 100 / (1 + gas / 70) ** 1.0;
         currentData.green_score = Number(((elec_score + gas_score) / 2).toFixed(1));
       });
 
       return updatedData
         .sort((a, b) => b.green_score - a.green_score)
-        .filter(item => item != null);
+        .filter((item) => item != null);
     });
   };
 
   const handleScoreboardDelete = (payload: any) => {
     if (!payload.payload?.old_record) return;
     const deletedRecord = payload.payload.old_record as ScoreboardItem;
-    
-    setScoreData(prev => 
-      prev.filter(item => item && item.id !== deletedRecord.id)
-    );
+
+    setScoreData((prev) => prev.filter((item) => item && item.id !== deletedRecord.id));
   };
 
   // Subscribe to real-time updates
@@ -111,7 +106,7 @@ export function useScoreboardModel() {
     if (channel) return; // Already subscribed
 
     const newChannel = supabase.channel('scoreboard', {
-      config: { broadcast: { self: false }, private: true }
+      config: { broadcast: { self: false }, private: true },
     });
 
     newChannel.on('broadcast', { event: 'INSERT' }, handleScoreboardInsert);

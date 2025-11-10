@@ -1,16 +1,11 @@
-import React, { useState } from 'react'
-import { Alert, StyleSheet, View, AppState,ScrollView  } from 'react-native'
-import { supabase } from '../../lib/supabase'
-
+import React, { useState } from 'react';
+import { Alert, StyleSheet, View, AppState, ScrollView } from 'react-native';
+import { supabase } from '../../lib/supabase';
 
 import { SignInForm } from '@/views/sign-in-form';
 
-
 export default function Auth() {
-
-  return (
-        <SignInForm />
-  )
+  return <SignInForm />;
 }
 
 const styles = StyleSheet.create({
@@ -26,4 +21,4 @@ const styles = StyleSheet.create({
   mt20: {
     marginTop: 20,
   },
-})
+});

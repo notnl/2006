@@ -1,4 +1,1 @@
-class MapModel { 
-
-     
-}
+class MapModel {}

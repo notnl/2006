@@ -1,4 +1,3 @@
-
 import { StyleSheet } from 'react-native';
 
 const form_style = StyleSheet.create({
@@ -150,7 +149,6 @@ const form_style = StyleSheet.create({
   },
 });
 
-
 const register_form_style = StyleSheet.create({
   continueButtonDisabled: {
     opacity: 0.6,
@@ -216,4 +214,4 @@ const register_form_style = StyleSheet.create({
   },
 });
 
-export { form_style,register_form_style }
+export { form_style, register_form_style };
