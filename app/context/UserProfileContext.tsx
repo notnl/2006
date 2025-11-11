@@ -69,10 +69,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const checkBadgesAchieved = async (data) => {
 
     try{
-      // This is my owned domain, it might be suspicious but I used it for another project, just reusing it for 2006
       // This is running on a flask backend server 
       // This will update the badges table in our supabase service, if the conditions are fulfilled
-      const checkResp = await fetch('http://mal-js.click:8080/api/check-badges',{ 
+      const checkResp = await fetch('http://localhost:8080/api/check-badges',{ 
           method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,10 +108,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       console.log('Profile loaded:', data);
        
+      //await withTimeout(checkBadgesAchieved(data),2000)
 
       const curTownRanking = await getTownRanking();
       setProfile({ ...data, town_ranking: curTownRanking });
-      //await withTimeout(checkBadgesAchieved(data),2000)
     } catch (error) {
       console.error('Error loading user profile:', error);
     }
