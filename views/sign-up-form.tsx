@@ -1,35 +1,32 @@
 import { useRouter } from 'expo-router';
 import { Input } from '@/views/ui/input';
 import { Text } from '@/views/ui/text';
-
 import { form_style } from '@/app/styles/form_style';
-
 import {
   Pressable,
   type TextInput,
   View,
   Alert,
-  StyleSheet,
   Modal,
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import { supabase } from '../lib/supabase';
 import { useState, useRef } from 'react';
 import { TOWNS } from '@/lib/town.ts';
-
 import { register_form_style } from '@/app/styles/form_style';
 
-import withTimeout from '@/lib/timeout';
+import { useUser } from '@/app/context/UserProfileContext';
+
+import { AuthController } from '@/app/controller/authentication_controller';
 
 export default function SignUpForm() {
   const router = useRouter();
 
   const [nric, setNric] = useState('');
+  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [selectedTown, setSelectedTown] = useState('');
-  const [loading, setLoading] = useState(false);
   const [showTownDropdown, setShowTownDropdown] = useState(false);
 
   const usernameInputRef = useRef<TextInput>(null);
@@ -54,120 +51,15 @@ export default function SignUpForm() {
   }
 
   async function onSubmit() {
-    try {
-      await withTimeout(signUpWithNric(), 15000);
-    } catch (error) {
-      console.error('Error with signing up:', error);
-    } finally {
-      setLoading(false);
+    setLoading(true)
+    console.log("Press submit")
+    const {success, error }  = await AuthController.signUp({nric, username, password, town: selectedTown});
+    console.log("after , ", error )
+    if (success) {
+      // Navigate to login or home page after successful registration
+      router.replace('/');
     }
-  }
-
-  async function signUpWithNric() {
-    console.log('Signing up ');
-    if (!nric || !username || !password || !selectedTown) {
-      Alert.alert('Error', 'Please enter NRIC, username, password and select a town');
-      return;
-    }
-
-    const nricRegex = /^[STFGstfg]\d{7}[A-Za-z]$/;
-    if (!nricRegex.test(nric)) {
-      Alert.alert('Error', 'Please enter a valid NRIC format (e.g., S1234567A)');
-      return;
-    }
-
-    if (username.length < 3) {
-      Alert.alert('Error', 'Username must be at least 3 characters long');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const email = `${nric.toLowerCase()}@nric.user`;
-
-      console.log('Signing up supabase ');
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            nric: nric.toUpperCase(),
-            username: username,
-            user_type: 'resident',
-            town: selectedTown,
-          },
-        },
-      });
-
-      if (error) {
-        Alert.alert('Registration Failed', error.message);
-        throw error;
-      }
-
-      console.log('This is the data user : ', data.user);
-      if (data.user) {
-        await createUserProfile(data.user.id, nric.toUpperCase(), username, selectedTown);
-
-        Alert.alert(
-          'Registration Successful',
-          'Your account has been created successfully! Please sign in with your account.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                router.replace('/');
-              },
-            },
-          ]
-        );
-      } else {
-        throw new Error('User is null');
-      }
-    } catch (error) {
-      Alert.alert('Registration Error', error.message);
-      console.error('Registration error:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function createUserProfile(userId: string, nric: string, username: string, town: string) {
-    try {
-      const { error } = await supabase.from('userprofile').insert([
-        {
-          id: userId,
-          nric: nric,
-          username: username,
-          email: `${nric.toLowerCase()}@nric.user`,
-          town: town,
-          water_consumption: 0.0,
-          electricity_usage: 0.0,
-          recycling_rate: 0.0,
-          green_score: 0, //Give user 0 green score at the start
-          resident_contribution: 0.0,
-          ranking: 0,
-          rewards: [],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ]);
-
-      if (error) {
-        console.error('Error creating profile:', error);
-        throw error;
-      } else {
-        console.log('Profile created successfully for user:', userId);
-      }
-    } catch (error) {
-      console.error('Profile creation error:', error);
-      throw error;
-    }
+    setLoading(false)
   }
 
   const renderTownItem = ({ item }: { item: string }) => (

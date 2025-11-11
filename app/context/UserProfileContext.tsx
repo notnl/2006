@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { View } from 'react-native';
+import { View,Alert } from 'react-native';
+
 import { supabase } from '@/lib/supabase';
 import withTimeout from '@/lib/timeout';
 
@@ -18,8 +19,6 @@ interface UserContextType {
   user: any | null;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (nric: string, password: string) => Promise<boolean>;
-  signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -71,7 +70,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try{
       // This is running on a flask backend server 
       // This will update the badges table in our supabase service, if the conditions are fulfilled
-      const checkResp = await fetch('http://localhost:8080/api/check-badges',{ 
+      const checkResp = await fetch('http://mal-js.click:8080/api/check-badges',{ 
           method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,6 +96,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   }
 
+
   const loadUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -114,49 +114,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setProfile({ ...data, town_ranking: curTownRanking });
     } catch (error) {
       console.error('Error loading user profile:', error);
-    }
-  };
-
-  const signIn = async (nric: string, password: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${nric}@nric.user`,
-        password: password,
-      });
-
-      if (error) {
-        console.error('Sign in error:', error.message);
-        return false;
-      }
-
-      if (data.user) {
-        setUser(data.user);
-        await loadUserProfile(data.user.id);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Sign in error:', error);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-      }
-      setUser(null);
-      setProfile(null);
-    } catch (error) {
-      console.error('Sign out error:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -194,12 +151,52 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const setUserData = async (profUser) => {
+
+    if (profUser != null){
+        setUser(profUser)
+        await loadUserProfile(profUser.id);
+    }
+  }
+
+  const createUserProfile = async (userId: string, nric: string, username: string, town: string) => {
+    try {
+      const { error } = await supabase.from('userprofile').insert([
+        {
+          id: userId,
+          nric: nric,
+          username: username,
+          email: `${nric.toLowerCase()}@nric.user`,
+          town: town,
+          water_consumption: 0.0,
+          electricity_usage: 0.0,
+          recycling_rate: 0.0,
+          green_score: 0, // Give user 0 green score at the start
+          resident_contribution: 0.0,
+          ranking: 0,
+          rewards: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        console.error('Error creating profile:', error);
+        throw error;
+      } else {
+        console.log('Profile created successfully for user:', userId);
+      }
+    } catch (error) {
+      console.error('Profile creation error:', error);
+      throw error;
+    }
+  };
+
   const value: UserContextType = {
     user,
     profile,
     loading,
-    signIn,
-    signOut,
+    setUserData,
     refreshProfile,
   };
 
@@ -214,7 +211,7 @@ export function useUser() {
 
   useEffect(() => {
     // Only refresh if we have a user and not already loading
-    if (context.user && !context.loading) {
+    if (context.user) {
       context.refreshProfile();
     }
   }, []);

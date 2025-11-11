@@ -11,7 +11,6 @@ export interface ScoreboardItem {
   town_name: string;
   green_score: number; // Calculated score based on resource usage
   gas: number;
-  water?: number;
   electricity?: number;
   recycle?: number;
 }

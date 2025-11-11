@@ -5,6 +5,8 @@ import { Text } from '@/views/ui/text';
 import { form_style } from '@/app/styles/form_style';
 import { Pressable, type TextInput, View, Alert } from 'react-native';
 import { useState, useRef } from 'react';
+import { AuthController } from '@/app/controller/authentication_controller';
+
 import { useUser } from '@/app/context/UserProfileContext';
 
 import { background_style } from '@/app/styles/background_style';
@@ -12,12 +14,11 @@ import withTimeout from '@/lib/timeout';
 
 export default function SignInForm() {
   const router = useRouter();
-  const { signIn } = useUser(); // Get the signIn function from context
 
   const [nric, setNric] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const { setUserData } = useUser();
   const passwordInputRef = useRef<TextInput>(null);
 
   function onNRICSubmitEditing() {
@@ -52,11 +53,11 @@ export default function SignInForm() {
     setLoading(true);
 
     try {
-      // Use the signIn function from context instead of direct supabase call
-      const success = await signIn(nric, password);
-
+      // Use the signIn function from our controller to talk to our model
+      const { success,error, user }  = await AuthController.signIn({nric, password});
       if (success) {
         Alert.alert('Success', 'Signed in successfully!');
+        setUserData(user) // This sets the context data 
         router.replace('/menu');
       } else {
         Alert.alert('Sign In Failed', 'Invalid NRIC or password');
