@@ -21,11 +21,8 @@ export class RewardsController {
     try {
       const userScore = profile?.green_score || 0;
 
-    console.log("Getting reward list")
-    console.log(RewardsModel)
       const { data: rewardsData, error: rewardsErr } = await RewardsModel.GetRewardList()
 
-    console.log("Finished")
       if (rewardsErr) {
         throw new Error(`Failed to load rewards: ${rewardsErr.message}`);
       }

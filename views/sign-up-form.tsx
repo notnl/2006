@@ -52,12 +52,15 @@ export default function SignUpForm() {
 
   async function onSubmit() {
     setLoading(true)
-    console.log("Press submit")
     const {success, error }  = await AuthController.signUp({nric, username, password, town: selectedTown});
-    console.log("after , ", error )
     if (success) {
       // Navigate to login or home page after successful registration
+      //
+      Alert.alert('Successfully Registered!');
       router.replace('/');
+    }else {
+
+      Alert.alert('Error with sign-up: ', error);
     }
     setLoading(false)
   }

@@ -49,16 +49,13 @@ export class AuthController {
   }
 
   static async signUp(signUpData: SignUpCredentials): Promise<{ success: boolean; error?: string }> {
-      console.log(signUpData)
     try {
-        console.log("came here")
       // Validate input
       const  validation  = this.validateSignUp(signUpData);
       if (!validation.isValid) {
         return { success: false, error: validation.error };
       }
 
-      console.log('Calling sign up here')
       // Sign up user
       const { data, error } = await signUpModel(signUpData);
 
@@ -66,10 +63,9 @@ export class AuthController {
         return { success: false, error: error.message };
       }
 
-      console.log('Creating user profile' +  data)
       if (data.user) {
           
-      console.log('Creating user profile', data.user)
+        console.log('Creating user profile', data.user)
         // Create user profile
          await createUserProfile(
           data.user.id,
