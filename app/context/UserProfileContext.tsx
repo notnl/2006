@@ -83,18 +83,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       //console.log(err)
       if (checkResp.status != 200) {
-        throw new Error('Response failed');
+        //throw new Error('Response failed'); // We don't want to throw error since checking for badges is not a dependency
+        return true
 
       }
     }catch(error){
         console.error('failed to check badges : ', error) // We will simply ignore if our endpoint is down
-      return false
-
-    }finally{
-
       return true
 
-    }
+    }    
+
+    return true
 
 
   }
@@ -110,10 +109,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       console.log('Profile loaded:', data);
        
-      await withTimeout(checkBadgesAchieved(data),2000)
 
       const curTownRanking = await getTownRanking();
       setProfile({ ...data, town_ranking: curTownRanking });
+      //await withTimeout(checkBadgesAchieved(data),2000)
     } catch (error) {
       console.error('Error loading user profile:', error);
     }
