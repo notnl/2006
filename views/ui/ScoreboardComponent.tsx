@@ -1,21 +1,42 @@
-import { View, Pressable, ScrollView, ImageBackground, StyleSheet } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { View, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Text } from '@/views/ui/text';
 import { useState, useEffect } from 'react';
-import { ActivityIndicator } from 'react-native';
-import { useScoreboardModel, ScoreboardItem } from '@/app/model/scoreboard_model';
+import { ScoreboardController } from '@/app/controller/scoreboard_controller';
+import { ScoreboardItem } from '@/app/model/scoreboard_model';
 import { useUser } from '@/app/context/UserProfileContext';
 import Loading from '@/views/ui/LoadingComponent';
 
-const SCREEN_OPTIONS = {
-  title: '',
-  headerTransparent: true,
-};
+import { styles } from '@/app/styles/scoreboard_style';
 
 export default function ScoreboardComponent() {
   const router = useRouter();
-  const { scoreData, greenScore, loading } = useScoreboardModel();
   const { profile } = useUser();
+  
+  // State management using controller directly
+  const [scoreData, setScoreData] = useState<ScoreboardItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Load scoreboard data using controller
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const result = await ScoreboardController.loadScoreboard();
+        if (result.success && result.data) {
+          setScoreData(result.data);
+        } else {
+          console.error('Error loading scoreboard:', result.error);
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // Find current town data from scoreData
   const currentTownData = scoreData.find((item) => item.town_name === profile?.town);
@@ -29,13 +50,13 @@ export default function ScoreboardComponent() {
   const getRankStyle = (rank: number) => {
     switch (rank) {
       case 1:
-        return { color: '#FFD700', icon: '🥇' }; // Gold
+        return { color: '#FFD700', icon: '🥇' };
       case 2:
-        return { color: '#C0C0C0', icon: '🥈' }; // Silver
+        return { color: '#C0C0C0', icon: '🥈' };
       case 3:
-        return { color: '#CD7F32', icon: '🥉' }; // Bronze
+        return { color: '#CD7F32', icon: '🥉' };
       default:
-        return { color: '#6A0DAD', icon: `${rank}` }; // Purple with number
+        return { color: '#6A0DAD', icon: `${rank}` };
     }
   };
 
@@ -100,7 +121,7 @@ export default function ScoreboardComponent() {
 
               return (
                 <View
-                  key={index}
+                  key={item.id || index}
                   style={[
                     styles.leaderboardRow,
                     isCurrentTown && styles.currentTownRow,
@@ -143,236 +164,3 @@ export default function ScoreboardComponent() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1A237E',
-  },
-  scrollContent: {
-    padding: 16,
-    paddingTop: 60,
-    paddingBottom: 40,
-  },
-  title: {
-    fontFamily: 'PressStart2P',
-    fontSize: 26,
-    color: '#FFA726',
-    textShadowColor: '#FF0044',
-    textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 1,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  // Floating Panel Styles
-  floatingPanel: {
-    backgroundColor: 'rgba(179, 157, 219, 0.95)',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 4,
-    borderColor: '#7E57C2',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  floatingPanelTitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 12,
-    color: '#1A237E',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  floatingPanelContent: {
-    alignItems: 'center',
-  },
-  townInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 8,
-  },
-  townName: {
-    fontFamily: 'PressStart2P',
-    fontSize: 14,
-    color: '#1A237E',
-    flex: 1,
-  },
-  rankBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  rankBadgeText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#FFFFFF',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginTop: 8,
-  },
-  statText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#1A237E',
-  },
-  // Leaderboard Styles
-  leaderboardCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 4,
-    borderColor: '#FF9800',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  leaderboardTitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 14,
-    color: '#1A237E',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    marginBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: '#1A237E',
-  },
-  headerRank: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#1A237E',
-    width: '20%',
-  },
-  headerTown: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#1A237E',
-    width: '40%',
-    textAlign: 'left',
-  },
-  headerStats: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#1A237E',
-    width: '40%',
-    textAlign: 'right',
-  },
-  leaderboardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  currentTownRow: {
-    backgroundColor: 'rgba(179, 157, 219, 0.3)',
-    borderColor: '#7E57C2',
-    borderWidth: 3,
-  },
-  firstPlaceRow: {
-    backgroundColor: 'rgba(255, 215, 0, 0.2)',
-    borderColor: '#FFD700',
-  },
-  rankSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '20%',
-  },
-  rankContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  rankIcon: {
-    fontSize: 10,
-  },
-  rankNumber: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#1A237E',
-  },
-  townSection: {
-    width: '40%',
-  },
-  townNameLeaderboard: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#1A237E',
-  },
-  youText: {
-    color: '#FF4081',
-    fontSize: 8,
-  },
-  statsSection: {
-    width: '40%',
-    alignItems: 'flex-end',
-  },
-  greenScore: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#4CAF50',
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  statValue: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#1A237E',
-  },
-  noDataText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  backButton: {
-    backgroundColor: '#FFA726',
-    borderColor: '#FF4081',
-    borderWidth: 4,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-    marginTop: 24,
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-  },
-  backButtonText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#3B0A00',
-    textAlign: 'center',
-  },
-});

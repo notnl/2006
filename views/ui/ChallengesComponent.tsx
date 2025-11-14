@@ -1,13 +1,121 @@
-import React from 'react';
-import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, ImageBackground, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useChallenges } from '@/app/model/challenge_model';
+import { ChallengeController } from '@/app/controller/challenge_controller';
+import { ChallengeQuestion } from '@/app/model/challenge_model';
 import Loading from '@/views/ui/LoadingComponent';
+import { useUser } from '@/app/context/UserProfileContext';
+
+import { styles } from '@/app/styles/challenge_style';
 
 export default function ChallengesComponent() {
   const router = useRouter();
-  const { questions, selectedAnswers, greenScore, timeLeft, loading, handleAnswer } =
-    useChallenges();
+  const { profile, refreshProfile } = useUser();
+  
+  const [questions, setQuestions] = useState<ChallengeQuestion[]>([]);
+  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string | null }>({});
+  const [greenScore, setGreenScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+
+  // Load challenges data on component mount
+  useEffect(() => {
+    initializeData();
+  }, []);
+
+  // Timer effect - Updates countdown every hour
+  useEffect(() => {
+    function updateCountdown() {
+      setTimeLeft(ChallengeController.getTimeLeft());
+    }
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const initializeData = async () => {
+    setLoading(true);
+    try {
+      await loadQuestions();
+      await loadUserProfile();
+    } catch (error) {
+      console.error('Error initializing challenges:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadQuestions = async () => {
+    const result = await ChallengeController.loadQuestions();
+    
+    if (result.success && result.questions) {
+      setQuestions(result.questions);
+    } else if (result.error) {
+      console.error('Error loading questions:', result.error);
+      if (result.error.includes('timed out')) {
+        Alert.alert('Timeout', 'Failed to load questions. Please check your connection.');
+      }
+    }
+  };
+
+  const loadUserProfile = async () => {
+    const result = await ChallengeController.loadUserProfile();
+    
+    if (result.success) {
+      setGreenScore(result.greenScore || 0);
+      setSelectedAnswers(result.quizAnswers || {});
+    } else if (result.error) {
+      console.error('Error loading profile:', result.error);
+      if (result.error.includes('timed out')) {
+        Alert.alert('Timeout', 'Failed to load user profile. Please check your connection.');
+      }
+    }
+  };
+
+  const handleAnswer = async (
+    qid: number,
+    option: string,
+    correctAnswer: string,
+    points: number
+  ) => {
+    // Validate submission first
+    const validation = ChallengeController.validateAnswerSubmission(
+      qid, 
+      selectedAnswers, 
+      questions
+    );
+    
+    if (!validation.isValid) {
+      Alert.alert('Cannot Submit', validation.error || 'Unable to submit answer.');
+      return;
+    }
+
+    // Submit answer using controller
+    const result = await ChallengeController.submitAnswer(
+      qid,
+      option,
+      correctAnswer,
+      greenScore,
+      selectedAnswers,
+      profile?.id || '',
+      questions
+    );
+
+    if (result.success) {
+      // Update local state
+      if (result.updatedAnswers) {
+        setSelectedAnswers(result.updatedAnswers);
+      }
+      if (result.newScore !== undefined) {
+        setGreenScore(result.newScore);
+        // Refresh profile in context to sync across app
+        await refreshProfile();
+      }
+    } else {
+      Alert.alert('Error', result.error || 'Failed to submit answer.');
+    }
+  };
 
   if (loading) {
     return <Loading />;
@@ -38,84 +146,92 @@ export default function ChallengesComponent() {
         style={styles.quizContainer}
         contentContainerStyle={styles.quizContent}
         showsVerticalScrollIndicator={false}>
-        {questions.map((q, idx) => {
-          const selectedLetter = selectedAnswers[q.id];
-          const selectedOption =
-            selectedLetter === 'A'
-              ? q.optionA
-              : selectedLetter === 'B'
-                ? q.optionB
-                : selectedLetter === 'C'
-                  ? q.optionC
-                  : null;
+        {questions.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>NO CHALLENGES AVAILABLE</Text>
+          </View>
+        ) : (
+          questions.map((q, idx) => {
+            const selectedLetter = selectedAnswers[q.id];
+            const selectedOption =
+              selectedLetter === 'A'
+                ? q.optionA
+                : selectedLetter === 'B'
+                  ? q.optionB
+                  : selectedLetter === 'C'
+                    ? q.optionC
+                    : null;
 
-          const selected = selectedOption;
+            const selected = selectedOption;
 
-          return (
-            <View key={q.id} style={styles.questionCard}>
-              {/* Question Header */}
-              <View style={styles.questionHeader}>
-                <Text style={styles.questionNumber}>QUESTION {idx + 1}</Text>
-                <View style={styles.pointsBadge}>
-                  <Text style={styles.pointsText}>+{q.points} pts</Text>
+            return (
+              <View key={q.id} style={styles.questionCard}>
+                {/* Question Header */}
+                <View style={styles.questionHeader}>
+                  <Text style={styles.questionNumber}>QUESTION {idx + 1}</Text>
+                  <View style={styles.pointsBadge}>
+                    <Text style={styles.pointsText}>+{q.points} pts</Text>
+                  </View>
+                </View>
+
+                {/* Question Text */}
+                <Text style={styles.questionText}>{q.question_desc}</Text>
+
+                {/* Options */}
+                <View style={styles.optionsContainer}>
+                  {[
+                    { letter: 'A', option: q.optionA },
+                    { letter: 'B', option: q.optionB },
+                    { letter: 'C', option: q.optionC },
+                  ].map(({ letter, option }, i) => {
+                    const isSelected = selected === option;
+                    const isCorrect = isSelected && option === q.answer;
+                    const isWrong = isSelected && option !== q.answer;
+                    const showCorrect = selected && option === q.answer && !isSelected;
+
+                    const bgColor = isCorrect
+                      ? '#4CAF50' // ✅ green for correct
+                      : isWrong
+                        ? '#FF6B6B' // ❌ red for wrong
+                        : showCorrect
+                          ? '#6bdcff' // light blue for actual answer when another is wrong
+                          : '#FFFFFF'; // ⬜ normal if not answered yet
+
+                    const borderColor = isCorrect
+                      ? '#2E7D32'
+                      : isWrong
+                        ? '#C62828'
+                        : showCorrect
+                          ? '#0288D1'
+                          : '#FF9800';
+
+                    return (
+                      <Pressable
+                        key={i}
+                        onPress={() => handleAnswer(q.id, option, q.answer, q.points)}
+                        style={[
+                          styles.optionButton,
+                          {
+                            backgroundColor: bgColor,
+                            borderColor: borderColor,
+                          },
+                        ]}
+                        disabled={!!selectedAnswers[q.id]} // Disable if already answered
+                      >
+                        <View style={styles.optionContent}>
+                          <View style={styles.optionLetter}>
+                            <Text style={styles.optionLetterText}>{letter}</Text>
+                          </View>
+                          <Text style={styles.optionText}>{option}</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </View>
-
-              {/* Question Text */}
-              <Text style={styles.questionText}>{q.question_desc}</Text>
-
-              {/* Options */}
-              <View style={styles.optionsContainer}>
-                {[
-                  { letter: 'A', option: q.optionA },
-                  { letter: 'B', option: q.optionB },
-                  { letter: 'C', option: q.optionC },
-                ].map(({ letter, option }, i) => {
-                  const isSelected = selected === option;
-                  const isCorrect = isSelected && option === q.answer;
-                  const isWrong = isSelected && option !== q.answer;
-                  const showCorrect = selected && option === q.answer && !isSelected;
-
-                  const bgColor = isCorrect
-                    ? '#4CAF50' // ✅ green for correct
-                    : isWrong
-                      ? '#FF6B6B' // ❌ red for wrong
-                      : showCorrect
-                        ? '#6bdcff' // light blue for actual answer when another is wrong
-                        : '#FFFFFF'; // ⬜ normal if not answered yet
-
-                  const borderColor = isCorrect
-                    ? '#2E7D32'
-                    : isWrong
-                      ? '#C62828'
-                      : showCorrect
-                        ? '#0288D1'
-                        : '#FF9800';
-
-                  return (
-                    <Pressable
-                      key={i}
-                      onPress={() => handleAnswer(q.id, option, q.answer, q.points)}
-                      style={[
-                        styles.optionButton,
-                        {
-                          backgroundColor: bgColor,
-                          borderColor: borderColor,
-                        },
-                      ]}>
-                      <View style={styles.optionContent}>
-                        <View style={styles.optionLetter}>
-                          <Text style={styles.optionLetterText}>{letter}</Text>
-                        </View>
-                        <Text style={styles.optionText}>{option}</Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          );
-        })}
+            );
+          })
+        )}
       </ScrollView>
 
       {/* Back Button */}
@@ -126,170 +242,3 @@ export default function ChallengesComponent() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1A237E',
-    paddingHorizontal: 16,
-    paddingTop: 60,
-  },
-  headerSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  header: {
-    fontFamily: 'PressStart2P',
-    fontSize: 20,
-    color: '#FFA726',
-    textShadowColor: '#FF0044',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 1,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: 300,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#FFA726',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statLabel: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  statValue: {
-    fontFamily: 'PressStart2P',
-    fontSize: 16,
-    color: '#4CAF50',
-  },
-  timeValue: {
-    fontFamily: 'PressStart2P',
-    fontSize: 12,
-    color: '#FFD700',
-  },
-  quizContainer: {
-    flex: 1,
-    marginBottom: 20,
-  },
-  quizContent: {
-    paddingBottom: 20,
-  },
-  questionCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 4,
-    borderColor: '#FF9800',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  questionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  questionNumber: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#3B0A00',
-  },
-  pointsBadge: {
-    backgroundColor: '#FFA726',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#FF4081',
-  },
-  pointsText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#3B0A00',
-  },
-  questionText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#3B0A00',
-    marginBottom: 16,
-    textAlign: 'center',
-    lineHeight: 14,
-    flexWrap: 'wrap',
-  },
-  optionsContainer: {
-    width: '100%',
-  },
-  optionButton: {
-    borderRadius: 12,
-    padding: 12,
-    marginVertical: 6,
-    borderWidth: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  optionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  optionLetter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#1A237E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  optionLetterText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#FFFFFF',
-  },
-  optionText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 9,
-    color: '#3B0A00',
-    flex: 1,
-    flexWrap: 'wrap',
-    lineHeight: 12,
-  },
-  backButton: {
-    backgroundColor: '#FFA726',
-    borderColor: '#FF4081',
-    borderWidth: 4,
-    paddingVertical: 16,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-    marginBottom: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    alignSelf: 'center',
-    minWidth: 200,
-  },
-  backButtonText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 10,
-    color: '#3B0A00',
-    textAlign: 'center',
-  },
-});

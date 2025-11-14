@@ -1,4 +1,9 @@
-import { RewardsModel, Reward, UserProfile } from '@/app/model/reward_model';
+import { 
+  GetRewardList,
+  updateUserRewards, 
+  Reward, 
+  UserProfile 
+} from '@/app/model/reward_model';
 
 export interface RewardsState {
   loading: boolean;
@@ -7,8 +12,33 @@ export interface RewardsState {
   userScore: number;
 }
 
+/**
+ * Controller responsible for loading rewards, validating redemption,
+ * and updating user reward-related data.
+ */
 export class RewardsController {
-  // Load all rewards data
+
+  /**
+   * Loads all available rewards and determines which rewards
+   * the user has already claimed.
+   *
+   * @async
+   * @param {UserProfile | null} profile - The user's profile information.
+   * @returns {Promise<{
+   *   success: boolean,
+   *   data?: {
+   *     rewards: Reward[],
+   *     claimedRewards: number[],
+   *     userScore: number
+   *   },
+   *   error?: string
+   * }>}
+   * - `success`: Whether loading was successful  
+   * - `data.rewards`: All rewards fetched from the database  
+   * - `data.claimedRewards`: IDs of rewards the user already claimed  
+   * - `data.userScore`: The user's green score  
+   * - `error`: Error message on failure  
+   */
   static async loadRewardsData(profile: UserProfile | null): Promise<{
     success: boolean;
     data?: {
@@ -21,7 +51,7 @@ export class RewardsController {
     try {
       const userScore = profile?.green_score || 0;
 
-      const { data: rewardsData, error: rewardsErr } = await RewardsModel.GetRewardList()
+      const { data: rewardsData, error: rewardsErr } = await GetRewardList();
 
       if (rewardsErr) {
         throw new Error(`Failed to load rewards: ${rewardsErr.message}`);
@@ -49,7 +79,23 @@ export class RewardsController {
     }
   }
 
-  // Handle reward redemption
+  /**
+   * Redeems a reward for the user, updating their score and claimed rewards list.
+   *
+   * @async
+   * @param {Reward} reward - The reward the user is attempting to redeem.
+   * @param {UserProfile} profile - The user's current profile state.
+   * @returns {Promise<{
+   *   success: boolean,
+   *   newScore?: number,
+   *   updatedRewards?: number[],
+   *   error?: string
+   * }>}
+   * - `success`: Whether redemption was successful  
+   * - `newScore`: New score after redemption  
+   * - `updatedRewards`: Updated list of claimed reward IDs  
+   * - `error`: Error message on failure  
+   */
   static async redeemReward(
     reward: Reward,
     profile: UserProfile
@@ -60,7 +106,7 @@ export class RewardsController {
     error?: string;
   }> {
     try {
-      // Validation
+      // Validation: insufficient score
       if (profile.green_score < reward.points_required) {
         return {
           success: false,
@@ -75,12 +121,10 @@ export class RewardsController {
         };
       }
 
-      // Calculate new values
       const newScore = profile.green_score - reward.points_required;
       const updatedRewards = [...profile.rewards, reward.id];
 
-      // Update database
-      const { error: userErr } = await RewardsModel.updateUserRewards(
+      const { error: userErr } = await updateUserRewards(
         profile.nric,
         newScore,
         updatedRewards
@@ -89,10 +133,6 @@ export class RewardsController {
       if (userErr) {
         throw new Error(`Failed to update user profile: ${userErr.message}`);
       }
-
-      // Optional: Update reward availability
-      // const { error: rewardErr } = await RewardsModel.updateRewardAvailability(reward.id, false);
-      // if (rewardErr) throw rewardErr;
 
       return {
         success: true,
@@ -107,7 +147,16 @@ export class RewardsController {
     }
   }
 
-  // Validate if user can redeem reward
+  /**
+   * Validates whether a user is eligible to redeem a specific reward.
+   *
+   * @param {number} userScore - The user's current green score.
+   * @param {Reward} reward - The reward the user wishes to redeem.
+   * @param {UserProfile | null} profile - The user's profile.
+   * @returns {{ isValid: boolean; error?: string }}
+   * - `isValid`: Whether redemption is allowed  
+   * - `error`: Explanation if redemption is invalid  
+   */
   static validateRewardRedemption(
     userScore: number,
     reward: Reward,

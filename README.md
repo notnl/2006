@@ -1,3 +1,11 @@
+## Requirements
+Run our flask server and host locally via 
+
+python3 load_to_db.py server
+
+
+
+
 # Minimal Template
 
 This is a [React Native](https://reactnative.dev/) project built with [Expo](https://expo.dev/) and [React Native Reusables](https://reactnativereusables.com).
