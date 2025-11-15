@@ -233,6 +233,35 @@ const styles = StyleSheet.create({
     color: '#3B0A00',
     textAlign: 'center',
   },
+tabsContainer: {
+  flexDirection: 'row',
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  borderRadius: 12,
+  padding: 4,
+  marginBottom: 16,
+  marginHorizontal: 16,
+},
+tab: {
+  flex: 1,
+  paddingVertical: 12,
+  paddingHorizontal: 8,
+  borderRadius: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+activeTab: {
+  backgroundColor: '#6A0DAD',
+},
+tabText: {
+  fontSize: 12,
+  fontWeight: '600',
+  color: 'rgba(255, 255, 255, 0.7)',
+  textAlign: 'center',
+},
+activeTabText: {
+  color: '#FFFFFF',
+  fontWeight: '700',
+},
 });
 
 export { styles };

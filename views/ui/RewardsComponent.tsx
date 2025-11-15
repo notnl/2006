@@ -84,13 +84,11 @@ export default function RewardsView() {
       resizeMode="cover"
       style={styles.backgroundImage}>
       
-      {/* Header Section */}
       <View style={styles.headerSection}>
         <Text style={styles.greenScoreText}>YOUR GREEN SCORE: {userScore} PTS</Text>
         <Text style={styles.rewardsHeader}>REWARDS</Text>
       </View>
 
-      {/* Rewards List */}
       <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
         {rewards.length === 0 ? (
           <View style={styles.emptyState}>
@@ -109,7 +107,6 @@ export default function RewardsView() {
         )}
       </ScrollView>
 
-      {/* Back Button */}
       <View style={styles.footerSection}>
         <LinearGradient
           colors={['#ff66cc', '#ff9933']}

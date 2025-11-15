@@ -4,7 +4,7 @@ import { Text } from '@/views/ui/text';
 import { useUser } from '@/app/context/UserProfileContext';
 import { useEffect, useState,Fragment } from 'react';
 import { supabase } from '@/lib/supabase';
-
+import { ProfileController }  from '@/app/controller/profile_controller'
 import { styles } from '@/app/styles/profile_style';
 
 export default function ProfileScreen() {
@@ -13,36 +13,42 @@ export default function ProfileScreen() {
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  //Skip first index to match our DB badge indexing
-  const badges_emojis = ['','💧','♻️','⚡','🌍','🗻','🗼'] 
+  const badges_emojis = ['🌱','♻️','⚡','🌍','🗻','🗼'] 
 
   useEffect(() => {
-    if (profile?.nric) {
-      fetchUserBadges(profile.nric);
+
+    const fetchUserBadgesFunc = async (curNric) => {
+      try { 
+
+        const { success , badges : fetchBadges } =  await ProfileController.GetUserBadges(curNric)
+
+        if (!success ||  fetchBadges == [] ){ 
+          throw new Error('Badges can\'t be found');
+        }
+
+
+        let onlyOurBadge = new Array(badges_emojis.length).fill(null)
+
+        fetchBadges.forEach((badge) => {
+          const badgeIndex = badge.badge_id - 1; // Our schema starts from 1 
+          if (badgeIndex >= 0 && badgeIndex < badges_emojis.length) {
+            onlyOurBadge[badgeIndex] = badge
+          }
+        });
+
+        setBadges(onlyOurBadge);
+      }catch (e){
+        //Ignore if we can't fetch badges
+      }finally {
+        setLoading(false)
+
+      }
+
+    }
+    if (profile?.nric){
+      fetchUserBadgesFunc(profile?.nric)
     }
   }, []);
-
-  async function fetchUserBadges(nric) {
-    const { data, error } = await supabase.from('badges').select('*').ilike('nric', nric);
-
-    if (error) {
-      console.error('Error fetching badges:', error);
-    } else {
-
-      let onlyOurBadge = new Array(badges_emojis.length).fill(null)
-
-    data.forEach((badge) => {
-      const badgeIndex = badge.badge_id;
-      if (badgeIndex >= 0 && badgeIndex < badges_emojis.length) {
-        onlyOurBadge[badgeIndex] = badge
-      }
-    });
-
-      setBadges(onlyOurBadge);
-    }
-
-    setLoading(false);
-  }
 
 
   if (!profile || loading) {
@@ -74,12 +80,11 @@ export default function ProfileScreen() {
           <View style={styles.badgesRow}>
           {
             badges.map( (curBadge, index) => { 
-
-              if (curBadge) {
+              if (curBadge != null) {
                return ( 
                 <Fragment key={index}>
                       <View style={styles.badgeIcon}>
-                      <Text style={styles.badgeEmoji}>{ badges_emojis[curBadge.id] }</Text>
+                      <Text style={styles.badgeEmoji}>{ badges_emojis[curBadge.badge_id] }</Text>
                       </View>
                       </Fragment>
                       ) 

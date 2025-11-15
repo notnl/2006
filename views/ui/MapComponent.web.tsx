@@ -194,7 +194,6 @@ export default function MapComponent() {
           )}
         </MapContainer>
 
-        {/* Back to Home Button */}
         <Pressable
           onPress={() => router.push('/menu')}
           style={{
@@ -240,7 +239,6 @@ export default function MapComponent() {
         library like react-google-maps/api or react-leaflet.
       </Text>
 
-      {/* Back to Home Button */}
       <Pressable
         onPress={() => router.push('/menu')}
         style={{

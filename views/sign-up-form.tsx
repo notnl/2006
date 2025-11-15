@@ -73,12 +73,9 @@ export default function SignUpForm() {
 
   return (
     <View style={form_style.container}>
-      {/* Main Card */}
       <View style={form_style.card}>
-        {/* Title */}
         <Text style={form_style.title}>Register an account for Green Quest</Text>
 
-        {/* NRIC Input */}
         <View style={form_style.inputContainer}>
           <Text style={form_style.label}>NRIC</Text>
           <Input
@@ -95,7 +92,6 @@ export default function SignUpForm() {
           />
         </View>
 
-        {/* Username Input */}
         <View style={form_style.inputContainer}>
           <Text style={form_style.label}>Username</Text>
           <Input
@@ -113,7 +109,6 @@ export default function SignUpForm() {
           />
         </View>
 
-        {/* Town Selection */}
         <View style={form_style.inputContainer}>
           <Text style={form_style.label}>Town</Text>
           <TouchableOpacity
@@ -131,7 +126,6 @@ export default function SignUpForm() {
           </TouchableOpacity>
         </View>
 
-        {/* Password Input */}
         <View style={form_style.inputContainer}>
           <Text style={form_style.label}>Password</Text>
           <Input
@@ -148,7 +142,6 @@ export default function SignUpForm() {
           />
         </View>
 
-        {/* Continue Button */}
         <Pressable
           onPress={onSubmit}
           disabled={loading}
@@ -162,7 +155,6 @@ export default function SignUpForm() {
         </Pressable>
       </View>
 
-      {/* Town Dropdown Modal */}
       <Modal
         visible={showTownDropdown}
         animationType="slide"
@@ -187,7 +179,6 @@ export default function SignUpForm() {
         </View>
       </Modal>
 
-      {/* Back to Home Button */}
       <Pressable onPress={() => router.back()} style={form_style.backButton}>
         <Text style={form_style.backButtonText}>BACK TO LOGIN</Text>
       </Pressable>

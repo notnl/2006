@@ -123,11 +123,9 @@ export default function ChallengesComponent() {
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <View style={styles.headerSection}>
         <Text style={styles.header}>QUIZ CHALLENGE</Text>
 
-        {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>SCORE</Text>
@@ -141,7 +139,6 @@ export default function ChallengesComponent() {
         </View>
       </View>
 
-      {/* Scrollable Quiz List */}
       <ScrollView
         style={styles.quizContainer}
         contentContainerStyle={styles.quizContent}
@@ -166,7 +163,6 @@ export default function ChallengesComponent() {
 
             return (
               <View key={q.id} style={styles.questionCard}>
-                {/* Question Header */}
                 <View style={styles.questionHeader}>
                   <Text style={styles.questionNumber}>QUESTION {idx + 1}</Text>
                   <View style={styles.pointsBadge}>
@@ -174,10 +170,8 @@ export default function ChallengesComponent() {
                   </View>
                 </View>
 
-                {/* Question Text */}
                 <Text style={styles.questionText}>{q.question_desc}</Text>
 
-                {/* Options */}
                 <View style={styles.optionsContainer}>
                   {[
                     { letter: 'A', option: q.optionA },
@@ -234,7 +228,6 @@ export default function ChallengesComponent() {
         )}
       </ScrollView>
 
-      {/* Back Button */}
       <Pressable onPress={() => router.push('/menu')} style={styles.backButton}>
         <Text style={styles.backButtonText}>BACK TO HOME</Text>
       </Pressable>

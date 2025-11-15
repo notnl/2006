@@ -80,11 +80,9 @@ export default function SignInForm() {
   return (
     <View style={form_style.container}>
       <View style={form_style.card}>
-        {/* Title */}
         <Text style={form_style.title}>Sign in to Green Quest</Text>
         <Text style={form_style.subtitle}>Welcome back! Please sign in to continue</Text>
 
-        {/* NRIC Input */}
         <View style={form_style.inputContainer}>
           <Text style={form_style.label}>NRIC</Text>
           <Input
@@ -101,7 +99,6 @@ export default function SignInForm() {
           />
         </View>
 
-        {/* Password Input */}
         <View style={form_style.inputContainer}>
           <View style={form_style.passwordHeader}>
             <Text style={form_style.label}>Password</Text>
@@ -123,7 +120,6 @@ export default function SignInForm() {
           />
         </View>
 
-        {/* Continue Button */}
         <Pressable
           onPress={onSubmit}
           disabled={loading}
@@ -131,7 +127,6 @@ export default function SignInForm() {
           <Text style={form_style.continueButtonText}>{loading ? 'Signing in...' : 'Sign in'}</Text>
         </Pressable>
 
-        {/* Sign Up Section */}
         <Text style={form_style.signupPrompt}>Don't have an account?</Text>
         <Pressable onPress={handleSignUp} disabled={loading}>
           <Text style={form_style.signupLink}>Sign up</Text>
